@@ -395,9 +395,228 @@ flutter_app/
 
 ---
 
-## 9. 部署考虑
+## 9. 参考项目
 
-- 数据库：SQLite (MVP) → PostgreSQL (生产)
-- 文件存储：本地文件系统 → 阿里云 OSS / S3 兼容
-- 会话存储：内存 → Redis（可选）
-- 后端部署：Docker 或直接运行
+以下项目在功能或架构上提供了参考：
+
+### 9.1 功能参考
+
+| 项目 | 来源 | 参考价值 |
+|------|------|----------|
+| [PersonalLearningPro](https://github.com/NitishKumar-ai/PersonalLearningPro) | GitHub | AI辅导、智能出卷、OCR扫描、角色RBAC |
+| [AI-Powered Smart School](https://github.com/Tharusha200219/AI-Powered-Smart-School-Safety-and-Performance-Monitoring-System) | GitHub | 智能座位优化算法 |
+| [An Agentic AI Education](https://github.com/zainab34iiee/An-Agentic-AI-Based-Intelligent-Education-Service-Assistance-System) | GitHub | AI Agent + RAG 架构参考 |
+| [SaralKakshyaProject](https://github.com/AlenPariyarOct10/SaralKakshyaProject) | GitHub | Laravel + Flask 混合架构 |
+| [E_schooll](https://github.com/muluken16/E_schooll) | GitHub | Django + React 成绩管理 |
+
+### 9.2 技术参考
+
+| 项目/框架 | 参考价值 |
+|-----------|----------|
+| [Langchain](https://github.com/langchain-ai/langchain) | Agent 核心框架 |
+| [FastMCP](https://github.com/jlowin/fastmcp) | MCP Server 实现 |
+| [ school management system ](https://github.com/) | 更多学校管理系统搜索关键词 |
+
+---
+
+## 10. 未来待开发功能
+
+### 10.1 近期扩展
+
+| 功能 | 描述 | 优先级 |
+|------|------|--------|
+| 课表管理 | 班级维度课程表 CRUD | P1 |
+| Excel 批量导入/导出 | 学生信息、成绩批量操作 | P1 |
+| 展示端 | 投影模式、大字体界面 | P1 |
+| 长期对话记忆 | 跨设备、跨会话的记忆 | P2 |
+| 成绩分布可视化 | 柱状图、饼图、趋势图 | P2 |
+| 课堂投票/问答 | 展示端互动功能 | P2 |
+
+### 10.2 中期规划
+
+| 功能 | 描述 | 优先级 |
+|------|------|--------|
+| 教师备课功能 | 教案管理、教学资源 | P3 |
+| 出卷功能 | 题库、组卷、打印 | P3 |
+| 家长角色 | 查看学生成绩、班级通知 | P3 |
+| 第三方登录 | 微信登录 | P3 |
+| 更多 LLM 供应商 | 硅基流动、火山引擎等 | P3 |
+| 班级通知推送 | 推送给家长/学生 | P3 |
+
+### 10.3 远期规划
+
+| 功能 | 描述 | 优先级 |
+|------|------|--------|
+| AI 出卷 | 根据知识点自动生成试卷 | P4 |
+| 学情分析 | AI 分析学生学习情况 | P4 |
+| 课堂互动 | 实时问答、投票、分组 | P4 |
+| 付费会员体系 | 基础版/专业版分层 | P4 |
+| 多语言支持 | 国际化 | P4 |
+
+### 10.4 头脑风暴功能点
+
+以下功能可在后续版本考虑：
+
+**课堂互动类：**
+- 🎯 随机点名（支持排除已点名）
+- ⏱️ 倒计时器（小组讨论计时）
+- 🎲 分组工具（一键随机分组、成绩分层分组）
+- 📊 课堂投票/问答（选择题、简答题）
+- 🏆 积分系统（学生课堂表现积分）
+
+**管理增强类：**
+- 📈 成绩分布可视化（柱状图、饼图、排名）
+- 📅 出勤统计（迟到率、请假统计）
+- 📢 班级通知（推送/短信）
+- 🔔 考试提醒（到期提醒）
+- 📋 班级事务管理（值日表、班委）
+
+**AI 增强类：**
+- 📸 OCR 拍照识别（试卷、答题卡）
+- 🎤 语音输入
+- 📝 作业批改辅助
+- 📚 知识点关联（学生成绩 ↔ 知识点掌握）
+
+**展示端功能：**
+- 📺 班级荣誉墙
+- 🎬 倒计时大屏
+- 🎯 抽奖/随机选择器
+- 📊 成绩龙虎榜
+
+---
+
+## 11. 部署方案
+
+### 11.1 Docker Compose 架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Docker Compose                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │   Nginx     │  │  Backend    │  │   Redis     │         │
+│  │  (反向代理)   │  │  (FastAPI)  │  │  (缓存)     │         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+│         │                │                                   │
+│         │                │                ┌─────────────┐  │
+│         │                └───────────────►│ PostgreSQL  │  │
+│         │                                 │  (数据库)    │  │
+│         │                                 └─────────────┘  │
+│         │                                              │     │
+│         │                ┌─────────────┐               │     │
+│         └───────────────►│  MinIO       │◄──────────────┘     │
+│                          │  (对象存储)   │                      │
+│                          └─────────────┘                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 11.2 容器说明
+
+| 容器 | 镜像 | 说明 |
+|------|------|------|
+| Nginx | nginx:alpine | 反向代理、SSL  termination、静态资源 |
+| Backend | 自定义 Python 镜像 | FastAPI 应用 |
+| PostgreSQL | postgres:15-alpine | 主数据库 |
+| Redis | redis:7-alpine | 会话存储、缓存 |
+| MinIO | minio/minio | S3 兼容对象存储（可选阿里云 OSS） |
+
+### 11.3 目录结构
+
+```
+deploy/
+├── docker-compose.yml          # 容器编排
+├── docker-compose.dev.yml      # 开发环境
+├── docker-compose.prod.yml    # 生产环境
+├── nginx/
+│   ├── nginx.conf             # Nginx 配置
+│   └── ssl/                   # SSL 证书
+├── backend/
+│   ├── Dockerfile
+│   └── ...
+├── flutter/
+│   └── Dockerfile             # Web 构建
+├── backups/                    # 备份脚本
+│   └── backup.sh
+└── scripts/
+    ├── init-db.sh             # 数据库初始化
+    └── migrate.sh             # 数据库迁移
+```
+
+### 11.4 环境变量
+
+```bash
+# 数据库
+DATABASE_URL=postgresql://user:password@postgres:5432/teacher_tool
+
+# Redis
+REDIS_URL=redis://redis:6379/0
+
+# JWT
+JWT_SECRET_KEY=your-secret-key
+JWT_ALGORITHM=HS256
+
+# LLM (OpenAI 或 Anthropic)
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+OPENAI_BASE_URL=https://api.openai.com/v1
+# 或
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_BASE_URL=https://api.anthropic.com
+
+# 对象存储 (MinIO 或 S3)
+STORAGE_TYPE=minio
+MINIO_ENDPOINT=minio:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=teacher-tool
+# 或使用阿里云 OSS
+# OSS_ENDPOINT=oss-cn-hangzhou.aliyuncs.com
+# OSS_ACCESS_KEY=...
+# OSS_SECRET_KEY=...
+# OSS_BUCKET=...
+
+# SMS (短信验证码)
+SMS_PROVIDER=aliyun
+SMS_ACCESS_KEY=...
+SMS_SECRET_KEY=...
+```
+
+### 11.5 部署命令
+
+```bash
+# 开发环境
+docker-compose -f docker-compose.dev.yml up -d
+
+# 生产环境
+docker-compose -f docker-compose.prod.yml up -d
+
+# 备份数据库
+./backups/backup.sh
+
+# 查看日志
+docker-compose logs -f backend
+```
+
+### 11.6 未来扩展
+
+| 组件 | 说明 |
+|------|------|
+| Prometheus + Grafana | 监控告警 |
+| ELK Stack | 日志收集分析 |
+| Caddy | 替代 Nginx（自动 HTTPS） |
+| Traefik | 动态路由（微服务扩展） |
+| Drone CI / GitHub Actions | CI/CD 流水线 |
+
+---
+
+## 12. 验证码短信
+
+MVP 阶段短信验证码可选方案：
+
+| 方案 | 说明 |
+|------|------|
+| 阿里云短信 | 国内主流，按量付费 |
+| 腾讯云短信 | 同上 |
+| 模拟模式 | 开发环境使用，固定验证码 123456 |
