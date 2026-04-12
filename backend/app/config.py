@@ -1,10 +1,11 @@
 from functools import lru_cache
 from pydantic import computed_field
-
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
+
     # App
     APP_NAME: str = "Teacher Tool"
     DEBUG: bool = True
@@ -43,9 +44,6 @@ class Settings(BaseSettings):
     def validate_production_settings(self):
         if self.is_production and self.JWT_SECRET_KEY == "your-secret-key-change-in-production":
             raise ValueError("JWT_SECRET_KEY must be changed in production!")
-
-    class Config:
-        env_file = ".env"
 
 
 @lru_cache()
