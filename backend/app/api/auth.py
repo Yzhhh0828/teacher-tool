@@ -11,6 +11,7 @@ from app.core.security import (
     create_refresh_token,
     decode_token,
 )
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

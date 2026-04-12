@@ -4,7 +4,7 @@ import re
 from typing import Optional
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
-from langchain.schema import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.agent.prompts import SYSTEM_PROMPT
@@ -91,7 +91,7 @@ class AgentChain:
             if action:
                 self.session.set_pending_action(action)
                 # Modify response to ask for confirmation
-                response_content = f"【待确认操作】{action['description']}\n\n请回复"是"确认执行，或其他内容取消。"
+                response_content = f'【待确认操作】{action["description"]}\n\n请回复"是"确认执行，或其他内容取消。'
 
         self.session.add_ai_message(response_content)
 

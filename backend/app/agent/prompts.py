@@ -1,5 +1,3 @@
-from langchain.prompts import ChatPromptTemplate
-
 SYSTEM_PROMPT = """You are a helpful AI assistant for a teacher tool. Your role is to help teachers manage their classes.
 
 When you need to perform an action (ADD, UPDATE, DELETE), you must output a JSON object in your response:
