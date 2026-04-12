@@ -39,6 +39,7 @@ class Student {
       'phone': phone,
       'parent_phone': parentPhone,
       'remarks': remarks,
+      // NOTE: do NOT include 'created_at' as it's set by backend
     };
   }
 }

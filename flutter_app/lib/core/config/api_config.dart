@@ -15,6 +15,7 @@ class ApiConfig {
 
   // Students
   static const String students = '/students';
+  static String student(int id) => '/students/$id';
   static String classStudents(int classId) => '/students/class/$classId';
 
   // Grades

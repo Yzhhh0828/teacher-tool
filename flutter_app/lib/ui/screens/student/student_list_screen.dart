@@ -49,7 +49,7 @@ class StudentListScreen extends ConsumerWidget {
                         child: Text(student.name[0]),
                       ),
                       title: Text(student.name),
-                      subtitle: Text('${student.gender} | ${student.phone ?? "无电话"}'),
+                      subtitle: Text('${student.gender == 'male' ? '男' : '女'} | ${student.phone ?? "无电话"}'),
                       trailing: PopupMenuButton(
                         itemBuilder: (context) => [
                           const PopupMenuItem(value: 'edit', child: Text('编辑')),

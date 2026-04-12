@@ -30,6 +30,6 @@ class StudentRepository {
   }
 
   Future<void> deleteStudent(int studentId) async {
-    await _client.delete('${ApiConfig.students}/$studentId');
+    await _client.delete(ApiConfig.student(studentId));
   }
 }
