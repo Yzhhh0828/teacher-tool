@@ -67,7 +67,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             'role': 'assistant',
             'content': data['content'],
           });
-          _sessionId = data['session_id'];
+          if (data['session_id'] != null) {
+            _sessionId = data['session_id'];
+          }
         }
       }
     } catch (e) {
@@ -125,7 +127,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 : Theme.of(context).colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(msg['content'] ?? ''),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (msg['hasImage'] == true)
+                                Container(
+                                  height: 100,
+                                  width: 100,
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image, size: 50),
+                                ),
+                              Text(msg['content'] ?? ''),
+                            ],
+                          ),
                         ),
                       );
                     },

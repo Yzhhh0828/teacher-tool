@@ -5,7 +5,10 @@ import 'package:dio/dio.dart';
 class SSEService {
   final Dio _dio;
 
-  SSEService() : _dio = Dio();
+  SSEService() : _dio = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 300),
+  ));
 
   Stream<Map<String, dynamic>> connect(String url, Map<String, dynamic> data) async* {
     final response = await _dio.post<ResponseBody>(
@@ -22,9 +25,10 @@ class SSEService {
     final stream = response.data!.stream;
     String buffer = '';
     String? currentEventType;
+    String currentData = '';
 
     await for (final chunk in stream) {
-      buffer += utf8.decode(chunk);
+      buffer += utf8.decode(chunk, allowMalformed: true);
 
       while (buffer.contains('\n')) {
         final index = buffer.indexOf('\n');
@@ -33,21 +37,20 @@ class SSEService {
 
         if (line.startsWith('event:')) {
           currentEventType = line.substring(6).trim();
-          continue;
-        }
-
-        if (line.startsWith('data:')) {
-          final jsonStr = line.substring(5).trim();
-          if (jsonStr.isNotEmpty) {
+        } else if (line.startsWith('data:')) {
+          currentData += (currentData.isEmpty ? '' : '\n') + line.substring(5).trim();
+        } else if (line.isEmpty && currentEventType != null) {
+          if (currentData.isNotEmpty) {
             try {
-              final data = jsonDecode(jsonStr);
+              final data = jsonDecode(currentData);
               yield {
-                'event': currentEventType ?? 'message',
+                'event': currentEventType,
                 'data': data,
               };
             } catch (_) {}
           }
           currentEventType = null;
+          currentData = '';
         }
       }
     }
