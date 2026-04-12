@@ -63,6 +63,16 @@ services:
       - backend
     restart: unless-stopped
 
+  flutter:
+    build:
+      context: ../flutter_app
+      dockerfile: ../deploy/flutter/Dockerfile
+    depends_on:
+      - backend
+    networks:
+      - backend
+    restart: unless-stopped
+
   nginx:
     image: nginx:alpine
     ports:
@@ -74,6 +84,7 @@ services:
       - nginx_data:/var/log/nginx
     depends_on:
       - backend
+      - flutter
     networks:
       - backend
     restart: unless-stopped

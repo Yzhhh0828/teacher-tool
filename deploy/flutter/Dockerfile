@@ -27,7 +27,6 @@ RUN flutter build web --release
 # Use nginx to serve
 FROM nginx:alpine
 COPY --from=0 /app/build/web /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 
