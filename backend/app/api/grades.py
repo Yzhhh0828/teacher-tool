@@ -139,6 +139,9 @@ async def update_grade(
     exam_result = await db.execute(select(Exam).where(Exam.id == grade.exam_id))
     exam = exam_result.scalar_one_or_none()
 
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+
     member = await check_class_permission(db, exam.class_id, current_user)
 
     # For teachers, check subject matches
@@ -167,6 +170,9 @@ async def delete_grade(
 
     exam_result = await db.execute(select(Exam).where(Exam.id == grade.exam_id))
     exam = exam_result.scalar_one_or_none()
+
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
 
     await check_class_permission(db, exam.class_id, current_user, require_owner=True)
 

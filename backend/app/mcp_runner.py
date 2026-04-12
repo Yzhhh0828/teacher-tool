@@ -2,6 +2,8 @@
 MCP Server runner for standalone mode.
 Can be used to run MCP server separately for Claude Desktop integration.
 """
+from typing import Optional
+
 from mcp.server.fastmcp import FastMCP
 from app.database import async_session_maker
 from app.mcp.tools import MCPTools
@@ -23,8 +25,8 @@ async def add_student(
     name: str,
     gender: str,
     user_id: int,
-    phone: str = None,
-    parent_phone: str = None,
+    phone: Optional[str] = None,
+    parent_phone: Optional[str] = None,
 ) -> dict:
     """Add a new student"""
     async with async_session_maker() as db:

@@ -620,3 +620,61 @@ MVP 阶段短信验证码可选方案：
 | 阿里云短信 | 国内主流，按量付费 |
 | 腾讯云短信 | 同上 |
 | 模拟模式 | 开发环境使用，固定验证码 123456 |
+
+---
+
+## 13. 开发进度
+
+### 13.1 进度概览
+
+| Phase | 状态 | 完成日期 | 备注 |
+|-------|------|----------|------|
+| Phase 1: 后端基础设施 | ✅ 完成 | 2026-04-12 | 项目结构、模型、认证 |
+| Phase 2: 核心 CRUD API | ✅ 完成 | 2026-04-12 | 班级/学生/成绩/座位/课表 API |
+| Phase 3: AI Agent + MCP | ✅ 完成 | 2026-04-12 | MCP工具、Agent、SSE API |
+| Phase 4: Flutter 前端 | 🚧 进行中 | - | - |
+| Phase 5: 生产部署 | ⏳ 待开始 | - | - |
+
+### 13.2 后端 API 端点 (已实现)
+
+| 模块 | 端点 | 方法 |
+|------|------|------|
+| 认证 | `/api/v1/auth/send_code` | POST |
+| 认证 | `/api/v1/auth/login` | POST |
+| 认证 | `/api/v1/auth/refresh` | POST |
+| 认证 | `/api/v1/auth/me` | GET |
+| 班级 | `/api/v1/classes` | GET, POST |
+| 班级 | `/api/v1/classes/{id}` | GET, PUT, DELETE |
+| 班级 | `/api/v1/classes/{id}/invite_code` | POST |
+| 班级 | `/api/v1/classes/join` | POST |
+| 学生 | `/api/v1/students` | POST |
+| 学生 | `/api/v1/students/class/{class_id}` | GET |
+| 学生 | `/api/v1/students/{id}` | PUT, DELETE |
+| 成绩 | `/api/v1/grades/exams` | POST |
+| 成绩 | `/api/v1/grades/exams/class/{class_id}` | GET |
+| 成绩 | `/api/v1/grades` | POST |
+| 成绩 | `/api/v1/grades/exams/{exam_id}` | GET |
+| 成绩 | `/api/v1/grades/{id}` | PUT, DELETE |
+| 座位 | `/api/v1/seating/class/{class_id}` | GET, PUT |
+| 座位 | `/api/v1/seating/class/{class_id}/shuffle` | POST |
+| 课表 | `/api/v1/schedules` | POST |
+| 课表 | `/api/v1/schedules/class/{class_id}` | GET |
+| 课表 | `/api/v1/schedules/{id}` | DELETE |
+| Agent | `/api/v1/agent/chat` | POST (SSE) |
+| Agent | `/api/v1/agent/history/{session_id}` | GET, DELETE |
+
+### 13.3 待完成项
+
+**Phase 3 补充:**
+- [ ] MCP 工具与 Agent Chain 的完整集成
+- [ ] Agent 执行实际操作（调用 MCP 工具）
+
+**Phase 4:**
+- [ ] Flutter 项目搭建
+- [ ] 所有 UI 界面
+- [ ] Excel 导入/导出功能
+
+**Phase 5:**
+- [ ] Docker Compose 生产配置
+- [ ] Nginx 配置
+- [ ] 部署文档完善
