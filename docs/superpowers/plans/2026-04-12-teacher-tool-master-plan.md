@@ -61,8 +61,7 @@
 - [x] SSE 流式响应
 - [x] 人类确认机制
 - [x] 短期会话记忆
-
-**待完成:** MCP 工具调用与 Agent Chain 的完整集成（Agent 执行实际操作）
+- [x] MCP 工具调用与 Agent Chain 的完整集成 ✅ 2026-04-12 修复
 
 ---
 
@@ -88,17 +87,25 @@
 
 ---
 
-## Phase 5: 生产部署 🚧 进行中
+## Phase 5: 生产部署 ✅ 完成
 
 **目标:** 完成生产环境部署配置
 
 **Sub-plan:** `docs/superpowers/plans/2026-04-12-phase5-production-deployment.md`
 
-### 包含内容
-- [ ] Docker Compose 生产配置
-- [ ] Nginx 配置
-- [ ] 环境变量文档
-- [ ] CI/CD 流水线 (可选)
+**完成时间:** 2026-04-12
+
+### 已完成
+- [x] Docker Compose 生产配置
+- [x] Nginx 配置
+- [x] 环境变量文档
+- [x] 数据库初始化和迁移脚本
+- [x] 备份脚本
+- [x] Flutter Web Docker 构建配置
+- [x] 部署文档
+- [x] 部署文件移至项目根目录 ✅ 2026-04-12 修复
+
+**注意:** CI/CD 流水线为可选，MVP 可后续添加
 
 ---
 
@@ -141,4 +148,4 @@ flutter run
 
 ### 环境变量
 
-参考 `deploy/.env.example`
+参考 `backend/.env.example` (开发) 或 `deploy/.env.prod.example` (生产)
