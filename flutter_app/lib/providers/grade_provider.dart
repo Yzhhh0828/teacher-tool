@@ -70,7 +70,7 @@ class ExamGradesNotifier extends StateNotifier<AsyncValue<List<Grade>>> {
 
   Future<void> saveGrade(Grade grade) async {
     try {
-      await _repository.createOrUpdateGrade(examId, grade);
+      await _repository.createGrade(examId, grade);
       await loadGrades();
     } catch (e) {
       rethrow;

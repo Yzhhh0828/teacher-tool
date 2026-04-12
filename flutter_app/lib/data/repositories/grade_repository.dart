@@ -30,7 +30,7 @@ class GradeRepository {
     return (response.data as List).map((json) => Grade.fromJson(json)).toList();
   }
 
-  Future<Grade> createOrUpdateGrade(int examId, Grade grade) async {
+  Future<Grade> createGrade(int examId, Grade grade) async {
     final response = await _client.post(
       ApiConfig.examGrades(examId),
       data: grade.toJson(),

@@ -98,6 +98,7 @@ class ExamListScreen extends ConsumerWidget {
   void _showCreateExamDialog(BuildContext context, WidgetRef ref, int classId) {
     final nameController = TextEditingController();
     DateTime selectedDate = DateTime.now();
+    bool isLoading = false;
 
     showDialog(
       context: context,
@@ -135,36 +136,47 @@ class ExamListScreen extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: isLoading ? null : () => Navigator.pop(context),
               child: const Text('取消'),
             ),
             ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('请输入考试名称')),
-                  );
-                  return;
-                }
-                final exam = Exam(
-                  id: 0,
-                  classId: classId,
-                  name: nameController.text.trim(),
-                  date: selectedDate,
-                  createdAt: DateTime.now(),
-                );
-                try {
-                  await ref.read(examListProvider(classId).notifier).addExam(exam);
-                  if (context.mounted) Navigator.pop(context);
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e')),
-                    );
-                  }
-                }
-              },
-              child: const Text('创建'),
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (nameController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('请输入考试名称')),
+                        );
+                        return;
+                      }
+                      setState(() => isLoading = true);
+                      final exam = Exam(
+                        id: 0,
+                        classId: classId,
+                        name: nameController.text.trim(),
+                        date: selectedDate,
+                        createdAt: DateTime.now(),
+                      );
+                      try {
+                        await ref.read(examListProvider(classId).notifier).addExam(exam);
+                        if (context.mounted) Navigator.pop(context);
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                        }
+                      } finally {
+                        if (context.mounted) setState(() => isLoading = false);
+                      }
+                    },
+              child: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('创建'),
             ),
           ],
         ),

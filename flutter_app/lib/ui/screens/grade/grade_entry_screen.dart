@@ -139,7 +139,7 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            student.gender == 'male' ? '男' : '女',
+                            _formatGender(student.gender),
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                         ],
@@ -188,6 +188,17 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
         );
       },
     );
+  }
+
+  String _formatGender(String? gender) {
+    switch (gender) {
+      case 'male':
+        return '男';
+      case 'female':
+        return '女';
+      default:
+        return gender ?? '';
+    }
   }
 
   Future<void> _saveGrade(int studentId) async {
