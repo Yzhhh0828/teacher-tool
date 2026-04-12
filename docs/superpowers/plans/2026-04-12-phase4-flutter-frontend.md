@@ -2034,10 +2034,27 @@ git add -A && git commit -m "feat: add presentation mode screens"
 
 ## 自检清单
 
-- [ ] Flutter 项目可运行
-- [ ] 登录/注册 UI 正常
-- [ ] 班级列表 UI 正常
-- [ ] 学生 CRUD UI 正常
-- [ ] Agent 对话 UI 正常
-- [ ] 展示端 UI 正常
-- [ ] Riverpod 状态管理正常工作
+- [x] Flutter 项目可运行
+- [x] 登录/注册 UI 正常
+- [x] 班级列表 UI 正常
+- [x] 学生 CRUD UI 正常
+- [x] 成绩管理 UI 正常
+- [x] 座位管理 UI 正常
+- [x] Agent 对话 UI 正常
+- [x] 展示端 UI 正常
+- [x] Riverpod 状态管理正常工作
+
+**完成时间:** 2026-04-12
+
+## 提交记录
+
+| Task | Commit | Description |
+|------|--------|-------------|
+| Task 1 | `4da4ae6` | Flutter 项目结构 |
+| Task 2 | (in Task 1) | 认证 UI |
+| Task 3 | `4f18ab9` | 班级管理 UI |
+| Task 4 | `27adeb8` | 学生管理 UI (fix gender display, createdAt) |
+| Task 5 | `c9b8359` | 成绩管理 UI (fix createGrade naming) |
+| Task 6 | `e57a946` | 座位管理 UI |
+| Task 7 | `78d1370` | Agent 对话 UI (fix SSE, image display) |
+| Task 8 | `6f37225` | 展示端 UI |
