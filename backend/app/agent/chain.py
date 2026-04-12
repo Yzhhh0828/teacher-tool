@@ -1,8 +1,11 @@
 import os
+import json
+import re
 from typing import Optional
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain.schema import HumanMessage, SystemMessage
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.session import ConversationSession, get_session, create_session
@@ -29,9 +32,10 @@ def get_llm():
 
 
 class AgentChain:
-    def __init__(self, session: ConversationSession):
+    def __init__(self, session: ConversationSession, db: AsyncSession = None):
         self.session = session
         self.llm = get_llm()
+        self.db = db
         self.confirmation_level = "medium"  # low, medium, high
 
     def _build_messages(self) -> list:
@@ -105,29 +109,70 @@ class AgentChain:
         return any(keyword in response for keyword in action_keywords)
 
     def _parse_action(self, response: str) -> Optional[dict]:
-        """Parse action from LLM response"""
+        """Parse action and parameters from LLM response"""
+        # Try to find JSON in response
+        json_match = re.search(r'\{[^{}]*"type"\s*:\s*"[^"]+"(?:,\s*"[^"]+"\s*:\s*[^}]+)*\}', response)
+        if json_match:
+            try:
+                data = json.loads(json_match.group())
+                return {
+                    "type": data.get("type"),
+                    "description": data.get("description", ""),
+                    "params": data.get("params", {}),
+                }
+            except json.JSONDecodeError:
+                pass
+
+        # Fallback to keyword matching (less reliable)
         if "add_student" in response:
-            return {"type": "add_student", "description": "添加学生"}
+            return {"type": "add_student", "description": "添加学生", "params": {}}
         elif "update_student" in response:
-            return {"type": "update_student", "description": "更新学生信息"}
+            return {"type": "update_student", "description": "更新学生信息", "params": {}}
         elif "delete_student" in response:
-            return {"type": "delete_student", "description": "删除学生"}
+            return {"type": "delete_student", "description": "删除学生", "params": {}}
         elif "add_grade" in response:
-            return {"type": "add_grade", "description": "录入成绩"}
+            return {"type": "add_grade", "description": "录入成绩", "params": {}}
         return None
 
     async def _execute_pending_action(self) -> dict:
-        """Execute the pending action"""
+        """Execute the pending action using MCP tools"""
         action = self.session.pending_action
         self.session.clear_pending_action()
 
-        # TODO: Call MCP tools here (Phase 3 Task 3)
-        # Currently MCP tools are not integrated, so we just return a placeholder
-        response = f"已执行操作: {action['description']}"
-        self.session.add_ai_message(response)
+        if not self.db:
+            response = f"已执行操作: {action['description']} (db not available)"
+            self.session.add_ai_message(response)
+            return {"type": "text", "content": response, "action_executed": True}
 
-        return {
-            "type": "text",
-            "content": response,
-            "action_executed": True,
-        }
+        from app.mcp.tools import MCPTools
+        mcp = MCPTools(self.db, self.session.user_id)
+
+        try:
+            action_type = action["type"]
+            params = action.get("params", {})
+
+            if action_type == "add_student":
+                result = await mcp.add_student(**params)
+                response = f"成功添加学生: {result.get('name', '未知')}"
+            elif action_type == "update_student":
+                result = await mcp.update_student(**params)
+                response = f"成功更新学生信息: {result.get('name', '未知')}"
+            elif action_type == "delete_student":
+                result = await mcp.delete_student(**params)
+                response = f"成功删除学生: {result.get('message', '')}"
+            elif action_type == "add_grade":
+                result = await mcp.add_grade(**params)
+                response = f"成功录入成绩: {result.get('id', '未知')}"
+            elif action_type == "update_seating":
+                result = await mcp.update_seating(**params)
+                response = "成功更新座位表"
+            elif action_type == "random_shuffle_seats":
+                result = await mcp.random_shuffle_seats(**params)
+                response = "成功随机换座位"
+            else:
+                response = f"操作类型未知: {action_type}"
+        except Exception as e:
+            response = f"操作失败: {str(e)}"
+
+        self.session.add_ai_message(response)
+        return {"type": "text", "content": response, "action_executed": True}

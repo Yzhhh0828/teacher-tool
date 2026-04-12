@@ -36,8 +36,8 @@ async def chat(
         session_id = str(uuid.uuid4())
         session = create_session(session_id, current_user.id)
 
-    # Create agent chain
-    agent = AgentChain(session)
+    # Create agent chain with db
+    agent = AgentChain(session, db)
 
     async def event_generator():
         try:
