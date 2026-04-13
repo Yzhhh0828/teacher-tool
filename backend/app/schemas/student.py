@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional
 
@@ -24,9 +24,8 @@ class StudentUpdate(BaseModel):
 
 
 class StudentResponse(StudentBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     class_id: int
     created_at: datetime
-
-    class Config:
-        from_attributes = True

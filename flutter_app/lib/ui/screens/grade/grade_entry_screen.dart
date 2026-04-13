@@ -126,8 +126,16 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      child: Text(student.name[0]),
+                    Builder(
+                      builder: (context) {
+                        final trimmedName = student.name.trim();
+                        final avatarLabel = trimmedName.isEmpty
+                            ? '生'
+                            : trimmedName.substring(0, 1);
+                        return CircleAvatar(
+                          child: Text(avatarLabel),
+                        );
+                      },
                     ),
                     const SizedBox(width: 16),
                     Expanded(

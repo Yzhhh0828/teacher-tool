@@ -6,7 +6,7 @@ class SendCodeRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    phone: str
+    phone: str = Field(..., pattern=r"^1[3-9]\d{9}$")
     code: str  # 验证码
 
 

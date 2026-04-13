@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional
 
@@ -13,13 +13,12 @@ class ClassMemberCreate(ClassMemberBase):
 
 
 class ClassMemberResponse(ClassMemberBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     class_id: int
     joined_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class ClassBase(BaseModel):
@@ -37,19 +36,16 @@ class ClassUpdate(BaseModel):
 
 
 class ClassResponse(ClassBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     owner_id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 class ClassDetailResponse(ClassResponse):
-    members: list[ClassMemberResponse] = []
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+    members: list[ClassMemberResponse] = Field(default_factory=list)
 
 
 class InviteCodeResponse(BaseModel):

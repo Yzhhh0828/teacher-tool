@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/auth_provider.dart';
-import '../../home/home_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -27,7 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (phone.isEmpty) return;
 
     await ref.read(authStateProvider.notifier).sendCode(phone);
-    if (mounted) {
+    if (mounted && ref.read(authStateProvider).error == null) {
       setState(() => _codeSent = true);
     }
   }
@@ -38,12 +37,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (phone.isEmpty || code.isEmpty) return;
 
     await ref.read(authStateProvider.notifier).login(phone, code);
-
-    if (ref.read(authStateProvider).isLoggedIn && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    }
   }
 
   @override
@@ -90,6 +83,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         )
                       : const Text('发送验证码'),
                 ),
+                if (authState.debugCode != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    '调试验证码：${authState.debugCode}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ] else ...[
                 TextField(
                   controller: _codeController,

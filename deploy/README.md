@@ -31,6 +31,26 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 docker-compose exec backend python -c "from app.database import init_db; import asyncio; asyncio.run(init_db())"
 ```
 
+### 5. 本地验证
+
+```bash
+# 在仓库根目录执行后端测试
+python -m pytest backend/tests
+
+# Flutter 端需要先安装 Flutter SDK，再在 flutter_app 目录执行
+flutter pub get
+flutter analyze
+flutter test
+```
+
+注意：后端当 `DEBUG=false` 或 `APP_ENV=production` 时会启用严格环境校验，此时必须显式配置安全的 `JWT_SECRET_KEY`、受限的 `BACKEND_CORS_ORIGINS`，并关闭 `EXPOSE_DEBUG_VERIFICATION_CODE`。
+
+如果 Flutter 端连接的后端地址不是默认的 `http://localhost:8000/api/v1`，请在启动时追加：
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://<your-host>:8000/api/v1
+```
+
 ## 服务访问
 
 - API: http://localhost/api/v1

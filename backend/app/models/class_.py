@@ -12,6 +12,8 @@ class Class(Base):
     grade: Mapped[str] = mapped_column(String(50))
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    invite_code: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
+    invite_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     owner: Mapped["User"] = relationship("User", back_populates="owned_classes")
     members: Mapped[list["ClassMember"]] = relationship("ClassMember", back_populates="class_")

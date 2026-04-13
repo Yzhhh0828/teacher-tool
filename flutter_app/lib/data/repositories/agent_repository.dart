@@ -27,4 +27,8 @@ class AgentRepository {
     final response = await _client.get(ApiConfig.agentHistory(sessionId));
     return List<Map<String, dynamic>>.from(response.data['messages']);
   }
+
+  Future<void> deleteHistory(String sessionId) async {
+    await _client.delete(ApiConfig.agentHistory(sessionId));
+  }
 }

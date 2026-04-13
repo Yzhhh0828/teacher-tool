@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional, Any
 
@@ -6,7 +6,7 @@ from typing import Optional, Any
 class SeatingBase(BaseModel):
     rows: int = 6
     cols: int = 8
-    seats: list[Any] = []
+    seats: list[Any] = Field(default_factory=list)
 
 
 class SeatingUpdate(BaseModel):
@@ -16,12 +16,11 @@ class SeatingUpdate(BaseModel):
 
 
 class SeatingResponse(SeatingBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     class_id: int
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class ShuffleResponse(BaseModel):

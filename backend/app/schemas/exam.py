@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 
@@ -18,12 +18,11 @@ class ExamUpdate(BaseModel):
 
 
 class ExamResponse(ExamBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     class_id: int
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class GradeBase(BaseModel):
@@ -43,9 +42,9 @@ class GradeUpdate(BaseModel):
 
 
 class GradeResponse(GradeBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     exam_id: int
     student_id: int
-
-    class Config:
-        from_attributes = True
+    created_at: datetime

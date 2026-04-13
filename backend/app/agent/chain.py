@@ -134,6 +134,23 @@ class AgentChain:
             return {"type": "add_grade", "description": "录入成绩", "params": {}}
         return None
 
+    def _validate_action_params(self, action_type: str, params: dict) -> Optional[str]:
+        required_params = {
+            "add_student": {"class_id", "name", "gender"},
+            "update_student": {"student_id"},
+            "delete_student": {"student_id"},
+            "add_grade": {"exam_id", "student_id", "subject", "score"},
+            "update_seating": {"class_id", "seats"},
+            "random_shuffle_seats": {"class_id"},
+        }
+
+        missing = sorted(
+            required_params.get(action_type, set()) - set(params.keys())
+        )
+        if missing:
+            return f"缺少必要参数：{', '.join(missing)}"
+        return None
+
     async def _execute_pending_action(self) -> dict:
         """Execute the pending action using MCP tools"""
         action = self.session.pending_action
@@ -150,6 +167,11 @@ class AgentChain:
         try:
             action_type = action["type"]
             params = action.get("params", {})
+            validation_error = self._validate_action_params(action_type, params)
+            if validation_error:
+                response = validation_error
+                self.session.add_ai_message(response)
+                return {"type": "text", "content": response, "action_executed": True}
 
             if action_type == "add_student":
                 result = await mcp.add_student(**params)
@@ -165,10 +187,16 @@ class AgentChain:
                 response = f"成功录入成绩: {result.get('id', '未知')}"
             elif action_type == "update_seating":
                 result = await mcp.update_seating(**params)
-                response = "成功更新座位表"
+                if isinstance(result, dict) and result.get("success") is False:
+                    response = f"操作失败: {result.get('message', '未知错误')}"
+                else:
+                    response = "成功更新座位表"
             elif action_type == "random_shuffle_seats":
                 result = await mcp.random_shuffle_seats(**params)
-                response = "成功随机换座位"
+                if isinstance(result, dict) and result.get("success") is False:
+                    response = f"操作失败: {result.get('message', '未知错误')}"
+                else:
+                    response = "成功随机换座位"
             else:
                 response = f"操作类型未知: {action_type}"
         except Exception as e:

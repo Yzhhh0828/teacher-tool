@@ -43,10 +43,14 @@ class StudentListScreen extends ConsumerWidget {
                 itemCount: students.length,
                 itemBuilder: (context, index) {
                   final student = students[index];
+                  final trimmedName = student.name.trim();
+                  final avatarLabel = trimmedName.isEmpty
+                      ? '生'
+                      : trimmedName.substring(0, 1);
                   return Card(
                     child: ListTile(
                       leading: CircleAvatar(
-                        child: Text(student.name[0]),
+                        child: Text(avatarLabel),
                       ),
                       title: Text(student.name),
                       subtitle: Text('${student.gender == 'male' ? '男' : '女'} | ${student.phone ?? "无电话"}'),

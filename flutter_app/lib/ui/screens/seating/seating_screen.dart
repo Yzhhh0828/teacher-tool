@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/seating_provider.dart';
 import '../../../providers/class_provider.dart';
 import '../../../providers/student_provider.dart';
+import '../../../data/models/seating.dart';
 import '../../../data/models/student.dart';
 
 class SeatingScreen extends ConsumerWidget {
@@ -43,7 +44,15 @@ class SeatingScreen extends ConsumerWidget {
                 ),
               );
               if (confirm == true) {
-                await ref.read(seatingProvider(currentClass.id).notifier).shuffleSeats();
+                try {
+                  await ref.read(seatingProvider(currentClass.id).notifier).shuffleSeats();
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('随机排座失败：$e')),
+                    );
+                  }
+                }
               }
             },
           ),
@@ -56,29 +65,11 @@ class SeatingScreen extends ConsumerWidget {
       body: seatingAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
-        data: (seating) {
-          if (seating == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('暂无座位布局'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => _showGridSizeDialog(context, ref, currentClass.id),
-                    child: const Text('创建座位'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return studentsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e')),
-            data: (students) => _buildSeatingGrid(context, ref, seating, students, currentClass.id),
-          );
-        },
+        data: (seating) => studentsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e')),
+          data: (students) => _buildSeatingGrid(context, ref, seating, students, currentClass.id),
+        ),
       ),
     );
   }
@@ -86,7 +77,7 @@ class SeatingScreen extends ConsumerWidget {
   Widget _buildSeatingGrid(
     BuildContext context,
     WidgetRef ref,
-    dynamic seating,
+    SeatingModel seating,
     List<Student> students,
     int classId,
   ) {
@@ -238,7 +229,15 @@ class SeatingScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await ref.read(seatingProvider(classId).notifier).createSeating(rows, cols);
+              try {
+                await ref.read(seatingProvider(classId).notifier).createSeating(rows, cols);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('创建座位布局失败：$e')),
+                  );
+                }
+              }
             },
             child: const Text('创建'),
           ),
@@ -269,7 +268,15 @@ class SeatingScreen extends ConsumerWidget {
                 title: const Text('清空座位'),
                 onTap: () async {
                   Navigator.pop(context);
-                  await ref.read(seatingProvider(classId).notifier).updateSeat(row, col, null);
+                  try {
+                    await ref.read(seatingProvider(classId).notifier).updateSeat(row, col, null);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('更新座位失败：$e')),
+                      );
+                    }
+                  }
                 },
               ),
               const Divider(),
@@ -281,7 +288,15 @@ class SeatingScreen extends ConsumerWidget {
                         : null,
                     onTap: () async {
                       Navigator.pop(context);
-                      await ref.read(seatingProvider(classId).notifier).updateSeat(row, col, student.id);
+                      try {
+                        await ref.read(seatingProvider(classId).notifier).updateSeat(row, col, student.id);
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('更新座位失败：$e')),
+                          );
+                        }
+                      }
                     },
                   )),
             ],

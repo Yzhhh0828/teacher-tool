@@ -59,6 +59,25 @@ async def list_exams(
     return exams
 
 
+@router.delete("/exams/{exam_id}")
+async def delete_exam(
+    exam_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Exam).where(Exam.id == exam_id))
+    exam = result.scalar_one_or_none()
+
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+
+    await check_class_permission(db, exam.class_id, current_user, require_owner=True)
+
+    await db.delete(exam)
+    await db.commit()
+    return {"message": "Exam deleted"}
+
+
 # Grade endpoints
 @router.post("", response_model=GradeResponse)
 async def create_grade(
@@ -144,8 +163,8 @@ async def update_grade(
 
     member = await check_class_permission(db, exam.class_id, current_user)
 
-    # For teachers, check subject matches
-    if member.role == "teacher" and data.subject and member.subject != data.subject:
+    # Teachers can only update grades in their own subject.
+    if member.role == "teacher" and member.subject != grade.subject:
         raise HTTPException(status_code=403, detail="Cannot update grade for this subject")
 
     for key, value in data.model_dump(exclude_unset=True).items():

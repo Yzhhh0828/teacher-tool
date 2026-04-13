@@ -1,5 +1,8 @@
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:8000/api/v1';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:8000/api/v1',
+  );
 
   // Auth
   static const String sendCode = '/auth/send_code';
@@ -27,6 +30,11 @@ class ApiConfig {
   // Seating
   static String seating(int classId) => '/seating/class/$classId';
   static String shuffleSeats(int classId) => '/seating/class/$classId/shuffle';
+
+  // Schedules
+  static const String schedules = '/schedules';
+  static String classSchedules(int classId) => '/schedules/class/$classId';
+  static String schedule(int scheduleId) => '/schedules/$scheduleId';
 
   // Agent
   static const String agentChat = '/agent/chat';

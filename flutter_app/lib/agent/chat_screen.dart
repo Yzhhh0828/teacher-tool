@@ -70,6 +70,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           if (data['session_id'] != null) {
             _sessionId = data['session_id'];
           }
+        } else if (event['event'] == 'error') {
+          final data = event['data'] is String ? jsonDecode(event['data']) : event['data'];
+          final errorMessage = data is Map<String, dynamic>
+              ? (data['error']?.toString() ?? 'Agent 服务异常')
+              : 'Agent 服务异常';
+          messages.addMessage({
+            'role': 'assistant',
+            'content': '抱歉，发生了错误: $errorMessage',
+          });
         }
       }
     } catch (e) {
@@ -92,7 +101,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            onPressed: () {
+            onPressed: () async {
+              final sessionId = _sessionId;
+              if (sessionId != null) {
+                try {
+                  await ref.read(agentRepositoryProvider).deleteHistory(sessionId);
+                } catch (_) {}
+              }
               ref.read(agentMessagesProvider.notifier).clear();
               _sessionId = null;
             },

@@ -7,17 +7,13 @@ class SeatingRepository {
 
   SeatingRepository(this._client);
 
-  Future<SeatingModel?> getSeating(int classId) async {
-    try {
-      final response = await _client.get(ApiConfig.seating(classId));
-      return SeatingModel.fromJson(response.data);
-    } catch (e) {
-      return null; // No seating exists yet
-    }
+  Future<SeatingModel> getSeating(int classId) async {
+    final response = await _client.get(ApiConfig.seating(classId));
+    return SeatingModel.fromJson(response.data);
   }
 
   Future<SeatingModel> createOrUpdateSeating(int classId, int rows, int cols) async {
-    final response = await _client.post(
+    final response = await _client.put(
       ApiConfig.seating(classId),
       data: {'rows': rows, 'cols': cols},
     );
@@ -25,14 +21,30 @@ class SeatingRepository {
   }
 
   Future<SeatingModel> shuffleSeats(int classId) async {
-    final response = await _client.post(ApiConfig.shuffleSeats(classId));
-    return SeatingModel.fromJson(response.data);
+    await _client.post(ApiConfig.shuffleSeats(classId));
+    final seating = await getSeating(classId);
+    return seating;
   }
 
   Future<void> updateSeat(int classId, int row, int col, int? studentId) async {
+    final seating = await getSeating(classId);
+    final seats = seating.seats
+        .map((seatRow) => List<int?>.from(seatRow))
+        .toList();
+
+    if (row < 0 || row >= seats.length || col < 0 || col >= seats[row].length) {
+      throw Exception('座位坐标超出范围');
+    }
+
+    seats[row][col] = studentId;
+
     await _client.put(
       ApiConfig.seating(classId),
-      data: {'row': row, 'col': col, 'student_id': studentId},
+      data: {
+        'rows': seating.rows,
+        'cols': seating.cols,
+        'seats': seats,
+      },
     );
   }
 }

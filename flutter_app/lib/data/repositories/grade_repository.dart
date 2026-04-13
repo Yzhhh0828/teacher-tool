@@ -31,9 +31,11 @@ class GradeRepository {
   }
 
   Future<Grade> createGrade(int examId, Grade grade) async {
+    final data = grade.toJson();
+    data['exam_id'] = examId;
     final response = await _client.post(
-      ApiConfig.examGrades(examId),
-      data: grade.toJson(),
+      ApiConfig.grades,
+      data: data,
     );
     return Grade.fromJson(response.data);
   }

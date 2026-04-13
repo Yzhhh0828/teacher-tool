@@ -9,8 +9,13 @@ class AuthRepository {
 
   AuthRepository(this._client);
 
-  Future<void> sendCode(String phone) async {
-    await _client.post(ApiConfig.sendCode, data: {'phone': phone});
+  Future<String?> sendCode(String phone) async {
+    final response = await _client.post(ApiConfig.sendCode, data: {'phone': phone});
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data['debug_code'] as String?;
+    }
+    return null;
   }
 
   Future<AuthTokens> login(String phone, String code) async {

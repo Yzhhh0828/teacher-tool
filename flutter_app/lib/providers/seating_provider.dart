@@ -5,11 +5,11 @@ import 'auth_provider.dart';
 
 final seatingRepositoryProvider = Provider((ref) => SeatingRepository(ref.read(apiClientProvider)));
 
-final seatingProvider = StateNotifierProvider.family<SeatingNotifier, AsyncValue<SeatingModel?>, int>((ref, classId) {
+final seatingProvider = StateNotifierProvider.family<SeatingNotifier, AsyncValue<SeatingModel>, int>((ref, classId) {
   return SeatingNotifier(ref.read(seatingRepositoryProvider), classId);
 });
 
-class SeatingNotifier extends StateNotifier<AsyncValue<SeatingModel?>> {
+class SeatingNotifier extends StateNotifier<AsyncValue<SeatingModel>> {
   final SeatingRepository _repository;
   final int classId;
 

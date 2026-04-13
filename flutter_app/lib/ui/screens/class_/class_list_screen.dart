@@ -31,10 +31,14 @@ class ClassListScreen extends ConsumerWidget {
                 itemCount: classes.length,
                 itemBuilder: (context, index) {
                   final class_ = classes[index];
+                  final trimmedName = class_.name.trim();
+                  final avatarLabel = trimmedName.isEmpty
+                      ? '班'
+                      : trimmedName.substring(0, 1);
                   return Card(
                     child: ListTile(
                       leading: CircleAvatar(
-                        child: Text(class_.name[0]),
+                        child: Text(avatarLabel),
                       ),
                       title: Text(class_.name),
                       subtitle: Text('${class_.grade}年级'),
@@ -89,11 +93,19 @@ class ClassListScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await ref.read(classListProvider.notifier).createClass(
-                nameController.text,
-                gradeController.text,
-              );
-              if (context.mounted) Navigator.pop(context);
+              try {
+                await ref.read(classListProvider.notifier).createClass(
+                  nameController.text.trim(),
+                  gradeController.text.trim(),
+                );
+                if (context.mounted) Navigator.pop(context);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('创建班级失败：$e')),
+                  );
+                }
+              }
             },
             child: const Text('创建'),
           ),
@@ -132,12 +144,20 @@ class ClassListScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () async {
               final repository = ref.read(classRepositoryProvider);
-              await repository.joinClass(
-                codeController.text,
-                subjectController.text,
-              );
-              await ref.read(classListProvider.notifier).loadClasses();
-              if (context.mounted) Navigator.pop(context);
+              try {
+                await repository.joinClass(
+                  codeController.text.trim(),
+                  subjectController.text.trim(),
+                );
+                await ref.read(classListProvider.notifier).loadClasses();
+                if (context.mounted) Navigator.pop(context);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('加入班级失败：$e')),
+                  );
+                }
+              }
             },
             child: const Text('加入'),
           ),

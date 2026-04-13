@@ -1,7 +1,11 @@
+from datetime import timedelta
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
+from app.config import settings
 from app.models.user import User
 from app.schemas.auth import SendCodeRequest, LoginRequest, TokenResponse, RefreshTokenRequest
 from app.schemas.user import UserResponse
@@ -11,13 +15,14 @@ from app.core.security import (
     create_refresh_token,
     decode_token,
 )
+from app.core.verification_codes import VerificationCodeStore
 from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# 模拟验证码存储 (生产用 Redis)
-# Note: In production, use Redis for verification_codes
-verification_codes = {}
+verification_store = VerificationCodeStore(
+    ttl=timedelta(seconds=settings.VERIFICATION_CODE_TTL_SECONDS),
+)
 
 
 @router.post("/send_code")
@@ -27,25 +32,33 @@ async def send_code(request: SendCodeRequest, db: AsyncSession = Depends(get_db)
     user = result.scalar_one_or_none()
 
     if user is None:
-        # 自动注册 - 默认密码 123456
-        # TODO: In production, require proper registration with password
-        user = User(phone=request.phone, password_hash=get_password_hash("123456"))
+        # Keep password unpredictable even when phone login creates the user.
+        user = User(
+            phone=request.phone,
+            password_hash=get_password_hash(secrets.token_urlsafe(32)),
+        )
         db.add(user)
         await db.commit()
         await db.refresh(user)
 
-    # 生成验证码 (开发环境固定 123456)
-    code = "123456"
-    verification_codes[request.phone] = code
+    fixed_code = (
+        settings.DEV_FIXED_VERIFICATION_CODE
+        if settings.should_expose_debug_verification_code
+        else None
+    )
+    code = verification_store.issue_code(request.phone, fixed_code=fixed_code)
 
-    return {"message": "Code sent", "code": code}  # TODO: Remove code from response in production
+    response = {"message": "Code sent"}
+    if settings.should_expose_debug_verification_code:
+        response["debug_code"] = code
+
+    return response
 
 
 @router.post("/login", response_model=TokenResponse)
 async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     # 验证验证码
-    stored_code = verification_codes.get(request.phone)
-    if stored_code is None or stored_code != request.code:
+    if not verification_store.verify_code(request.phone, request.code):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid verification code",
@@ -64,9 +77,6 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     # 生成 Token
     access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
-
-    # 清理验证码
-    del verification_codes[request.phone]
 
     return TokenResponse(access_token=access_token, refresh_token=refresh_token)
 

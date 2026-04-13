@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional
 
 
@@ -14,14 +14,14 @@ class ConversationSession:
             "role": "user",
             "content": content,
             "image_url": image_url,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         })
 
     def add_ai_message(self, content: str):
         self.messages.append({
             "role": "assistant",
             "content": content,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         })
 
     def set_pending_action(self, action: dict):
