@@ -1,6 +1,7 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import init_db
+from app.database import init_db, close_db
 from app.config import settings
 from app.api.auth import router as auth_router
 from app.api.class_ import router as class_router
@@ -10,7 +11,15 @@ from app.api.seating import router as seating_router
 from app.api.schedules import router as schedules_router
 from app.api.agent import router as agent_router
 
-app = FastAPI(title="Teacher Tool API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+    await close_db()
+
+
+app = FastAPI(title="Teacher Tool API", lifespan=lifespan)
 
 # CORS
 # Note: In production, restrict CORS to specific origins
@@ -21,11 +30,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup():
-    await init_db()
 
 
 app.include_router(auth_router, prefix="/api/v1")

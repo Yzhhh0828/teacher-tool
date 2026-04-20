@@ -1,10 +1,9 @@
-import os
 import json
 import re
 from typing import Optional
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.agent.prompts import SYSTEM_PROMPT
@@ -49,7 +48,7 @@ class AgentChain:
                     content = f"[图片上传]\n{content}"
                 messages.append(HumanMessage(content=content))
             else:
-                messages.append(HumanMessage(content=msg["content"]))
+                messages.append(AIMessage(content=msg["content"]))
 
         return messages
 
@@ -81,8 +80,10 @@ class AgentChain:
         # Stream response
         response_content = ""
         async for chunk in self.llm.astream(messages):
-            if chunk.content:
-                response_content += chunk.content
+            # In LangChain v1, use .text property for string content
+            chunk_text = chunk.text if hasattr(chunk, 'text') else chunk.content
+            if chunk_text:
+                response_content += chunk_text
 
         # Check if we need confirmation
         if self._needs_confirmation(response_content):

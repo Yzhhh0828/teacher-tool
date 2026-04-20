@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.database import get_db
 from app.core.security import decode_token
 from app.models.user import User
+from app.models.class_ import ClassMember
 
 security = HTTPBearer()
 
@@ -46,3 +47,24 @@ async def get_current_user(
         )
 
     return user
+
+
+async def check_class_permission(
+    db: AsyncSession,
+    class_id: int,
+    user: User,
+    require_owner: bool = False,
+) -> ClassMember:
+    """Check if user has permission to access class"""
+    result = await db.execute(
+        select(ClassMember).where(
+            ClassMember.class_id == class_id,
+            ClassMember.user_id == user.id,
+        )
+    )
+    member = result.scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=403, detail="Not a member of this class")
+    if require_owner and member.role != "owner":
+        raise HTTPException(status_code=403, detail="Only owner can perform this action")
+    return member

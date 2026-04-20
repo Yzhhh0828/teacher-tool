@@ -1,5 +1,5 @@
 from datetime import datetime, UTC
-from sqlalchemy import String, DateTime, ForeignKey, Float
+from sqlalchemy import String, DateTime, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -24,9 +24,9 @@ class Grade(Base):
     exam_id: Mapped[int] = mapped_column(ForeignKey("exams.id"))
     student_id: Mapped[int] = mapped_column(ForeignKey("students.id"))
     subject: Mapped[str] = mapped_column(String(50))
-    score: Mapped[float] = mapped_column(default=0.0)
+    score: Mapped[float] = mapped_column(Float, default=0.0)
     remarks: Mapped[str] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
     exam: Mapped["Exam"] = relationship("Exam", back_populates="grades")
     student: Mapped["Student"] = relationship("Student", back_populates="grades")

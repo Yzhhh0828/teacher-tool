@@ -3,28 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
 from app.models.user import User
-from app.models.class_ import Class, ClassMember
 from app.models.student import Student
 from app.schemas.student import StudentCreate, StudentUpdate, StudentResponse
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, check_class_permission
 
 router = APIRouter(prefix="/students", tags=["students"])
-
-
-async def check_class_permission(db: AsyncSession, class_id: int, user: User, require_owner: bool = False):
-    """Check if user has permission to access class"""
-    result = await db.execute(
-        select(ClassMember).where(
-            ClassMember.class_id == class_id,
-            ClassMember.user_id == user.id,
-        )
-    )
-    member = result.scalar_one_or_none()
-    if not member:
-        raise HTTPException(status_code=403, detail="Not a member of this class")
-    if require_owner and member.role != "owner":
-        raise HTTPException(status_code=403, detail="Only owner can perform this action")
-    return member
 
 
 @router.post("", response_model=StudentResponse)

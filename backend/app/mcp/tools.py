@@ -230,6 +230,10 @@ class MCPTools:
         )
         students = result.scalars().all()
         student_ids = [s.id for s in students]
+        
+        if not student_ids:
+            return {"success": False, "message": "No students in this class"}
+
         random.shuffle(student_ids)
 
         # Get seating
@@ -246,7 +250,7 @@ class MCPTools:
         for _ in range(rows):
             row = []
             for _ in range(cols):
-                row.append(student_ids[idx % len(student_ids)] if student_ids else None)
+                row.append(student_ids[idx % len(student_ids)])
                 idx += 1
             new_seats.append(row)
 

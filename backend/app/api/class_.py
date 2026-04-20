@@ -28,15 +28,10 @@ async def create_class(
     current_user: User = Depends(get_current_user),
 ):
     class_ = Class(name=data.name, grade=data.grade, owner_id=current_user.id)
+    class_.members.append(ClassMember(user_id=current_user.id, role="owner"))
     db.add(class_)
     await db.commit()
     await db.refresh(class_)
-
-    # Add owner as a member
-    member = ClassMember(class_id=class_.id, user_id=current_user.id, role="owner")
-    db.add(member)
-    await db.commit()
-
     return class_
 
 
@@ -89,11 +84,13 @@ async def update_class(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Check if owner
-    result = await db.execute(select(Class).where(Class.id == class_id, Class.owner_id == current_user.id))
+    result = await db.execute(select(Class).where(Class.id == class_id))
     class_ = result.scalar_one_or_none()
 
     if not class_:
+        raise HTTPException(status_code=404, detail="Class not found")
+
+    if class_.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only owner can update class")
 
     if data.name is not None:
@@ -112,11 +109,13 @@ async def delete_class(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Check if owner
-    result = await db.execute(select(Class).where(Class.id == class_id, Class.owner_id == current_user.id))
+    result = await db.execute(select(Class).where(Class.id == class_id))
     class_ = result.scalar_one_or_none()
 
     if not class_:
+        raise HTTPException(status_code=404, detail="Class not found")
+
+    if class_.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only owner can delete class")
 
     await db.delete(class_)
@@ -130,11 +129,13 @@ async def create_invite_code(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Check if owner
-    result = await db.execute(select(Class).where(Class.id == class_id, Class.owner_id == current_user.id))
+    result = await db.execute(select(Class).where(Class.id == class_id))
     class_ = result.scalar_one_or_none()
 
     if not class_:
+        raise HTTPException(status_code=404, detail="Class not found")
+
+    if class_.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only owner can create invite code")
 
     invite_code = generate_invite_code()

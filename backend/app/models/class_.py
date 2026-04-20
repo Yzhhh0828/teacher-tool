@@ -1,5 +1,5 @@
 from datetime import datetime, UTC
-from sqlalchemy import String, DateTime, ForeignKey
+from sqlalchemy import String, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -25,6 +25,9 @@ class Class(Base):
 
 class ClassMember(Base):
     __tablename__ = "class_members"
+    __table_args__ = (
+        UniqueConstraint("class_id", "user_id", name="uq_class_member"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     class_id: Mapped[int] = mapped_column(ForeignKey("classes.id"))
