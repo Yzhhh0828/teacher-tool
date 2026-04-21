@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../agent/chat_screen.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/class_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../class_/class_list_screen.dart';
 import '../grade/exam_list_screen.dart';
 import '../presentation/presentation_screen.dart';
@@ -20,113 +21,150 @@ class HomeScreen extends ConsumerWidget {
     final classesAsync = ref.watch(classListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('教师工作台'),
-        actions: [
-          IconButton(
-            tooltip: '退出登录',
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authStateProvider.notifier).logout();
-            },
-          ),
-        ],
-      ),
+      backgroundColor: AppTheme.backgroundLight,
       body: RefreshIndicator(
+        color: AppTheme.primaryGreen,
         onRefresh: () => ref.read(classListProvider.notifier).loadClasses(),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _OverviewCard(
-              title: authState.user?.phone ?? '未识别账号',
-              subtitle: currentClass == null
-                  ? '当前还没有选中的班级，先去班级列表选择一个班级。'
-                  : '当前班级：${currentClass.name} · ${currentClass.grade}',
-              trailing: classesAsync.when(
-                loading: () => const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                error: (_, __) => const Icon(Icons.error_outline),
-                data: (classes) => Text(
-                  '${classes.length} 个班级',
-                  style: Theme.of(context).textTheme.titleMedium,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 120.0,
+              floating: false,
+              pinned: true,
+              backgroundColor: AppTheme.backgroundLight,
+              elevation: 0,
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
+                title: Text(
+                  '教师工作台',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _QuickActionCard(
-                  icon: Icons.groups_rounded,
-                  title: '班级管理',
-                  subtitle: '创建、加入和切换班级',
-                  onTap: () => _openPage(context, const ClassListScreen()),
-                ),
-                _QuickActionCard(
-                  icon: Icons.badge_outlined,
-                  title: '学生管理',
-                  subtitle: '查看和编辑班级学生',
-                  onTap: () => _openPage(context, const StudentListScreen()),
-                ),
-                _QuickActionCard(
-                  icon: Icons.assignment_outlined,
-                  title: '考试成绩',
-                  subtitle: '录入考试并维护成绩',
-                  onTap: () => _openPage(context, const ExamListScreen()),
-                ),
-                _QuickActionCard(
-                  icon: Icons.grid_view_rounded,
-                  title: '座位管理',
-                  subtitle: '创建和调整座位表',
-                  onTap: () => _openPage(context, const SeatingScreen()),
-                ),
-                _QuickActionCard(
-                  icon: Icons.calendar_view_week_outlined,
-                  title: '课表管理',
-                  subtitle: '维护班级课程安排',
-                  onTap: () => _openPage(context, const ScheduleScreen()),
-                ),
-                _QuickActionCard(
-                  icon: Icons.present_to_all_rounded,
-                  title: '课堂展示',
-                  subtitle: '随机点名与课堂工具',
-                  onTap: () => _openPage(context, const PresentationScreen()),
-                ),
-                _QuickActionCard(
-                  icon: Icons.smart_toy_outlined,
-                  title: 'AI 助手',
-                  subtitle: '与教学助手对话',
-                  onTap: () => _openPage(context, const ChatScreen()),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceWhite,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.logout_rounded, color: AppTheme.secondaryMaillard, size: 20),
+                    ),
+                    tooltip: '退出登录',
+                    onPressed: () async {
+                      await ref.read(authStateProvider.notifier).logout();
+                    },
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              '使用建议',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            Card(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      currentClass == null
-                          ? '先进入“班级管理”创建或选择班级，再继续后续操作。'
-                          : '你已经选择了 ${currentClass.name}，可以直接进入学生、考试和座位模块。',
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                child: _OverviewCard(
+                  title: authState.user?.phone ?? '未识别账号',
+                  subtitle: currentClass == null
+                      ? '当前还没有选中的班级，先去班级列表选择一个班级。'
+                      : '当前班级：${currentClass.name} · ${currentClass.grade}',
+                  trailingIcon: Icons.auto_awesome,
+                  classCountWidget: classesAsync.when(
+                    loading: () => const SizedBox(
+                      width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     ),
-                    const SizedBox(height: 8),
-                    const Text('如果接口地址不是本机，请通过 `--dart-define=API_BASE_URL=...` 指定后端地址。'),
-                  ],
+                    error: (_, __) => const Icon(Icons.error_outline, color: Colors.white),
+                    data: (classes) => Text(
+                      '${classes.length} 个班级',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white),
+                    ),
+                  ),
                 ),
               ),
             ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  'Quick Actions',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            // Bento Box layout
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.1,
+                ),
+                delegate: SliverChildListDelegate.fixed([
+                  _ActionTile(
+                    icon: Icons.groups_rounded,
+                    title: '班级管理',
+                    color: AppTheme.primaryGreen,
+                    onTap: () => _openPage(context, const ClassListScreen()),
+                  ),
+                  _ActionTile(
+                    icon: Icons.badge_outlined,
+                    title: '学生管理',
+                    color: AppTheme.secondaryMaillard,
+                    onTap: () => _openPage(context, const StudentListScreen()),
+                  ),
+                  _ActionTile(
+                    icon: Icons.assignment_outlined,
+                    title: '考试成绩',
+                    color: Color(0xFFC08A62),
+                    onTap: () => _openPage(context, const ExamListScreen()),
+                  ),
+                  _ActionTile(
+                    icon: Icons.grid_view_rounded,
+                    title: '座位管理',
+                    color: Color(0xFF6B8E7B),
+                    onTap: () => _openPage(context, const SeatingScreen()),
+                  ),
+                  _ActionTile(
+                    icon: Icons.calendar_view_week_outlined,
+                    title: '课表管理',
+                    color: AppTheme.secondaryMaillard,
+                    onTap: () => _openPage(context, const ScheduleScreen()),
+                  ),
+                  _ActionTile(
+                    icon: Icons.present_to_all_rounded,
+                    title: '课堂展示',
+                    color: AppTheme.primaryGreen,
+                    onTap: () => _openPage(context, const PresentationScreen()),
+                  ),
+                  _ActionTile(
+                    icon: Icons.smart_toy_outlined,
+                    title: 'AI 助手',
+                    color: Color(0xFF9E768F), // Special tint
+                    onTap: () => _openPage(context, const ChatScreen()),
+                  ),
+                ]),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 48)),
           ],
         ),
       ),
@@ -143,86 +181,139 @@ class HomeScreen extends ConsumerWidget {
 class _OverviewCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final Widget trailing;
+  final IconData trailingIcon;
+  final Widget classCountWidget;
 
   const _OverviewCard({
     required this.title,
     required this.subtitle,
-    required this.trailing,
+    required this.trailingIcon,
+    required this.classCountWidget,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                Icons.school_outlined,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryGreen,
+            AppTheme.primaryGreen.withOpacity(0.85),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryGreen.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(
+              trailingIcon,
+              size: 100,
+              color: Colors.white.withOpacity(0.1),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 6),
-                  Text(subtitle),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: classCountWidget,
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(width: 12),
-            trailing,
-          ],
-        ),
+              const SizedBox(height: 12),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white.withOpacity(0.9),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _QuickActionCard extends StatelessWidget {
+class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
+  final Color color;
   final VoidCallback onTap;
 
-  const _QuickActionCard({
+  const _ActionTile({
     required this.icon,
     required this.title,
-    required this.subtitle,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(height: 12),
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                Text(subtitle),
-              ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceWhite,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
           ),
         ),
       ),

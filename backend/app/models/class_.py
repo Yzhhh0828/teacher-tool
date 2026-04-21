@@ -17,7 +17,7 @@ class Class(Base):
 
     owner: Mapped["User"] = relationship("User", back_populates="owned_classes")
     members: Mapped[list["ClassMember"]] = relationship("ClassMember", back_populates="class_")
-    students: Mapped[list["Student"]] = relationship("Student", back_populates="class_")
+    students: Mapped[list["Student"]] = relationship("Student", back_populates="class_", cascade="all, delete-orphan")
     exams: Mapped[list["Exam"]] = relationship("Exam", back_populates="class_", cascade="all, delete-orphan")
     schedules: Mapped[list["Schedule"]] = relationship("Schedule", back_populates="class_", cascade="all, delete-orphan")
     seating: Mapped["Seating"] = relationship("Seating", back_populates="class_", uselist=False, cascade="all, delete-orphan")
@@ -33,7 +33,7 @@ class ClassMember(Base):
     class_id: Mapped[int] = mapped_column(ForeignKey("classes.id"))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     role: Mapped[str] = mapped_column(String(20))  # owner, teacher
-    subject: Mapped[str] = mapped_column(String(50), nullable=True)
+    subject: Mapped[str | None] = mapped_column(String(50), nullable=True)
     joined_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
     class_: Mapped["Class"] = relationship("Class", back_populates="members")
