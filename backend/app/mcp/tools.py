@@ -246,12 +246,14 @@ class MCPTools:
         # Create new arrangement
         rows, cols = seating.rows, seating.cols
         new_seats = []
-        idx = 0
+        student_iter = iter(student_ids)
         for _ in range(rows):
             row = []
             for _ in range(cols):
-                row.append(student_ids[idx % len(student_ids)])
-                idx += 1
+                try:
+                    row.append(next(student_iter))
+                except StopIteration:
+                    row.append(None)
             new_seats.append(row)
 
         seating.seats = new_seats

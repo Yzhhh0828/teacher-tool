@@ -1,6 +1,8 @@
 import uuid
 import json
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.user import User
@@ -8,12 +10,18 @@ from app.api.deps import get_current_user
 from app.agent.chain import AgentChain
 from app.agent.session import get_session, create_session
 
+
+class ChatRequest(BaseModel):
+    content: str
+    session_id: Optional[str] = None
+    image: Optional[str] = None
+
 router = APIRouter(prefix="/agent", tags=["agent"])
 
 
 @router.post("/chat")
 async def chat(
-    message: dict,
+    message: ChatRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -21,9 +29,9 @@ async def chat(
     Send a message to the agent.
     Returns SSE stream for real-time responses.
     """
-    user_input = message.get("content", "")
-    image_data = message.get("image")  # base64 encoded
-    session_id = message.get("session_id")
+    user_input = message.content
+    image_data = message.image
+    session_id = message.session_id
 
     # Get or create session
     if session_id:

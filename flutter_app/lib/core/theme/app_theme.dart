@@ -21,11 +21,9 @@ class AppTheme {
         primary: primaryGreen,
         secondary: secondaryMaillard,
         surface: surfaceWhite,
-        background: backgroundLight,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         surfaceTint: Colors.transparent, // Disable tint
       ),
       textTheme: baseTextTheme.copyWith(

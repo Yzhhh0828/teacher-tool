@@ -11,9 +11,9 @@ class Student(Base):
     class_id: Mapped[int] = mapped_column(ForeignKey("classes.id"))
     name: Mapped[str] = mapped_column(String(100))
     gender: Mapped[str] = mapped_column(String(10))  # male, female
-    phone: Mapped[str] = mapped_column(String(20), nullable=True)
-    parent_phone: Mapped[str] = mapped_column(String(20), nullable=True)
-    remarks: Mapped[str] = mapped_column(Text, nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    parent_phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    remarks: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
     class_: Mapped["Class"] = relationship("Class", back_populates="students")

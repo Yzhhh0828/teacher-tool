@@ -118,8 +118,33 @@ class ApiClient {
     final responseData = error.response?.data;
     if (responseData is Map<String, dynamic>) {
       final detail = responseData['detail'] ?? responseData['message'];
+      
+      // Handle string messages
       if (detail is String && detail.trim().isNotEmpty) {
         return detail;
+      }
+      
+      // Handle FastAPI Pydantic validation arrays (422 Unprocessable Entity)
+      if (detail is List && detail.isNotEmpty) {
+        final messages = <String>[];
+        for (final errorItem in detail) {
+          if (errorItem is Map && errorItem.containsKey('msg')) {
+            String msg = errorItem['msg'];
+            // Simplify common regex error for phone numbers
+            if (msg.contains('string does not match regex') || msg.contains('pattern')) {
+               if (errorItem['loc'] != null && errorItem['loc'].contains('phone')) {
+                 messages.add('请输入正确的11位手机号码');
+               } else {
+                 messages.add('输入格式不正确');
+               }
+            } else {
+               messages.add(msg);
+            }
+          }
+        }
+        if (messages.isNotEmpty) {
+          return messages.join('; ');
+        }
       }
     }
 
@@ -129,15 +154,15 @@ class ApiClient {
       case DioExceptionType.receiveTimeout:
         return '请求超时，请稍后重试';
       case DioExceptionType.connectionError:
-        return '无法连接到服务器，请检查地址和网络';
+        return '无法连接到服务器，请检查网络或配置 (Emulator: 10.0.2.2)';
       case DioExceptionType.badResponse:
-        return '服务器返回了异常响应';
+        return '服务器返回了异常响应 (${error.response?.statusCode})';
       case DioExceptionType.cancel:
         return '请求已取消';
       case DioExceptionType.badCertificate:
         return '服务器证书无效';
       case DioExceptionType.unknown:
-        return '发生了未知网络错误';
+        return '发生了未知网络错误: ${error.message}';
     }
   }
 }

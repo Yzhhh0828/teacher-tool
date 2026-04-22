@@ -4,6 +4,7 @@ from sqlalchemy import select
 from app.database import get_db
 from app.models.user import User
 from app.models.exam import Exam, Grade
+from app.models.student import Student
 from app.schemas.exam import ExamCreate, ExamResponse, GradeCreate, GradeUpdate, GradeResponse
 from app.api.deps import get_current_user, check_class_permission
 
@@ -79,6 +80,14 @@ async def create_grade(
     # For teachers, check subject matches
     if member.role == "teacher" and member.subject != data.subject:
         raise HTTPException(status_code=403, detail="Cannot add grade for this subject")
+
+    # Verify student belongs to the same class as the exam
+    student_result = await db.execute(select(Student).where(Student.id == data.student_id))
+    student = student_result.scalar_one_or_none()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    if student.class_id != exam.class_id:
+        raise HTTPException(status_code=400, detail="Student does not belong to this class")
 
     # Check if grade already exists
     existing_result = await db.execute(
