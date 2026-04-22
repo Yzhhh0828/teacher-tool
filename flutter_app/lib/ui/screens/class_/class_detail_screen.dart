@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/class_model.dart';
 import '../../../providers/class_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../grade/exam_list_screen.dart';
 import '../presentation/presentation_screen.dart';
 import '../schedule/schedule_screen.dart';
@@ -161,10 +162,17 @@ class _EntryTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        leading: Icon(icon),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppTheme.primaryColor),
+        ),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
         onTap: onTap,
       ),
     );

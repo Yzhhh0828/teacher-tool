@@ -25,7 +25,7 @@ async def create_schedule(
     return schedule
 
 
-@router.get("/class/{class_id}")
+@router.get("/class/{class_id}", response_model=list[ScheduleResponse])
 async def list_schedules(
     class_id: int,
     db: AsyncSession = Depends(get_db),

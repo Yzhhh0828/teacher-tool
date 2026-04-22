@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/agent_provider.dart';
+import '../core/theme/app_theme.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -138,9 +139,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: isUser
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(12),
+                                ? AppTheme.primaryColor
+                                : AppTheme.surfaceWhite,
+                            borderRadius: BorderRadius.circular(AppTheme.radius),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,10 +151,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   height: 100,
                                   width: 100,
                                   margin: const EdgeInsets.only(bottom: 8),
-                                  color: Colors.grey[300],
-                                  child: const Icon(Icons.image, size: 50),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.dividerColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.image, size: 40, color: AppTheme.textSecondary),
                                 ),
-                              Text(msg['content'] ?? ''),
+                              Text(
+                                msg['content'] ?? '',
+                                style: TextStyle(
+                                  color: isUser ? Colors.white : AppTheme.textPrimary,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -164,8 +173,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, -2))],
+              color: AppTheme.backgroundLight,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
             ),
             child: SafeArea(
               child: Row(

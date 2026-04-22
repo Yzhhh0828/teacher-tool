@@ -2,29 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Maillard Green Color Palette
-  static const Color primaryGreen = Color(0xFF5D7B6F);
-  static const Color secondaryMaillard = Color(0xFFA47E5C);
-  static const Color backgroundLight = Color(0xFFF9F8F6);
+  // Warm Earth Color Palette
+  static const Color primaryColor = Color(0xFFC08A62);
+  static const Color primaryDark = Color(0xFF8B6F4E);
+  static const Color accent = Color(0xFFD4A574);
+  static const Color backgroundLight = Color(0xFFFBF8F4);
   static const Color surfaceWhite = Color(0xFFFFFFFF);
-  static const Color textPrimary = Color(0xFF2C3632);
-  static const Color textSecondary = Color(0xFF7A8B83);
+  static const Color textPrimary = Color(0xFF3D3028);
+  static const Color textSecondary = Color(0xFF9E8E7E);
+  static const Color dividerColor = Color(0xFFF0EAE2);
+  static const Color errorColor = Color(0xFFBF4B4B);
+  static const Color successColor = Color(0xFF6B9E78);
+
+  static const double radius = 16.0;
+  static const double contentMaxWidth = 480.0;
 
   static ThemeData get lightTheme {
-    // We use Outfit for a premium, rounded geometric look.
     final TextTheme baseTextTheme = GoogleFonts.outfitTextTheme();
 
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: backgroundLight,
       colorScheme: ColorScheme.light(
-        primary: primaryGreen,
-        secondary: secondaryMaillard,
+        primary: primaryColor,
+        secondary: primaryDark,
+        tertiary: accent,
         surface: surfaceWhite,
+        error: errorColor,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: textPrimary,
-        surfaceTint: Colors.transparent, // Disable tint
+        surfaceTint: Colors.transparent,
       ),
       textTheme: baseTextTheme.copyWith(
         displayLarge: baseTextTheme.displayLarge?.copyWith(color: textPrimary, fontWeight: FontWeight.w700),
@@ -54,7 +62,7 @@ class AppTheme {
         color: surfaceWhite,
         shadowColor: const Color(0x0A000000),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(radius),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -63,28 +71,28 @@ class AppTheme {
         fillColor: surfaceWhite,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(radius),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(color: dividerColor, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: primaryGreen, width: 1.5),
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: primaryColor, width: 1.5),
         ),
-        labelStyle: TextStyle(color: textSecondary),
+        labelStyle: const TextStyle(color: textSecondary),
         prefixIconColor: textSecondary,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryGreen,
+          backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(radius),
           ),
           textStyle: GoogleFonts.outfit(
             fontSize: 16,
@@ -95,11 +103,55 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: secondaryMaillard,
+          foregroundColor: primaryDark,
           textStyle: GoogleFonts.outfit(
             fontWeight: FontWeight.w600,
           ),
         ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surfaceWhite,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius + 4),
+        ),
+        titleTextStyle: GoogleFonts.outfit(
+          color: textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        shape: CircleBorder(),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: textPrimary,
+        contentTextStyle: GoogleFonts.outfit(color: Colors.white),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: surfaceWhite,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: dividerColor,
+        thickness: 1,
+        space: 1,
+      ),
+      listTileTheme: ListTileThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );
   }

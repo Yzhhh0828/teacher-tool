@@ -25,7 +25,7 @@ class Grade(Base):
     student_id: Mapped[int] = mapped_column(ForeignKey("students.id"))
     subject: Mapped[str] = mapped_column(String(50))
     score: Mapped[float] = mapped_column(Float, default=0.0)
-    remarks: Mapped[str] = mapped_column(String(500), nullable=True)
+    remarks: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
     exam: Mapped["Exam"] = relationship("Exam", back_populates="grades")

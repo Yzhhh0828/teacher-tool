@@ -35,8 +35,20 @@ async def add_student(
 
 
 @mcp.tool()
-async def update_student(student_id: int, user_id: int, **fields) -> dict:
+async def update_student(
+    student_id: int,
+    user_id: int,
+    name: Optional[str] = None,
+    gender: Optional[str] = None,
+    phone: Optional[str] = None,
+    parent_phone: Optional[str] = None,
+    remarks: Optional[str] = None,
+) -> dict:
     """Update student information"""
+    fields = {k: v for k, v in {
+        "name": name, "gender": gender, "phone": phone,
+        "parent_phone": parent_phone, "remarks": remarks,
+    }.items() if v is not None}
     async with async_session_maker() as db:
         tools = MCPTools(db, user_id)
         return await tools.update_student(student_id, **fields)

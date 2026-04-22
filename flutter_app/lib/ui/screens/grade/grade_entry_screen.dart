@@ -5,6 +5,7 @@ import '../../../providers/student_provider.dart';
 import '../../../providers/class_provider.dart';
 import '../../../data/models/grade.dart';
 import '../../../data/models/student.dart';
+import '../../../core/theme/app_theme.dart';
 
 class GradeEntryScreen extends ConsumerStatefulWidget {
   final Exam exam;
@@ -59,7 +60,6 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
               value: _selectedSubject,
               decoration: const InputDecoration(
                 labelText: '科目',
-                border: OutlineInputBorder(),
               ),
               items: _subjects.map((subject) {
                 return DropdownMenuItem(value: subject, child: Text(subject));
@@ -75,14 +75,14 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
           Expanded(
             child: studentsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => Center(child: Text('加载失败：$e')),
               data: (students) {
                 if (students.isEmpty) {
                   return const Center(child: Text('暂无学生'));
                 }
                 return gradesAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text('Error: $e')),
+                  error: (e, _) => Center(child: Text('加载失败：$e')),
                   data: (grades) => _buildStudentGradeList(students, grades),
                 );
               },
@@ -133,6 +133,8 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
                             ? '生'
                             : trimmedName.substring(0, 1);
                         return CircleAvatar(
+                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                          foregroundColor: AppTheme.primaryColor,
                           child: Text(avatarLabel),
                         );
                       },
@@ -144,11 +146,11 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
                         children: [
                           Text(
                             student.name,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           Text(
                             _formatGender(student.gender),
-                            style: TextStyle(color: Colors.grey[600]),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
                       ),
@@ -164,7 +166,6 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
                         controller: _scoreControllers[student.id],
                         decoration: const InputDecoration(
                           labelText: '分数',
-                          border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                       ),
@@ -176,7 +177,6 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
                         controller: _remarksControllers[student.id],
                         decoration: const InputDecoration(
                           labelText: '备注',
-                          border: OutlineInputBorder(),
                         ),
                       ),
                     ),
@@ -248,7 +248,7 @@ class _GradeEntryScreenState extends ConsumerState<GradeEntryScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('保存失败：$e')),
         );
       }
     }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/schedule.dart';
 import '../../../providers/class_provider.dart';
 import '../../../providers/schedule_provider.dart';
+import '../../../core/theme/app_theme.dart';
 
 class ScheduleScreen extends ConsumerWidget {
   const ScheduleScreen({super.key});
@@ -30,17 +31,32 @@ class ScheduleScreen extends ConsumerWidget {
       ),
       body: schedulesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('加载失败：$e')),
         data: (schedules) => schedules.isEmpty
-            ? const Center(child: Text('暂无课表，点击右上角添加'))
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calendar_view_week_outlined, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
+                    const SizedBox(height: 16),
+                    Text('暂无课表', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    Text('点击右上角 + 添加课程', style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+              )
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: schedules.length,
                 itemBuilder: (context, index) {
                   final schedule = schedules[index];
-                  return Card(
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Card(
                     child: ListTile(
                       leading: CircleAvatar(
+                        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                        foregroundColor: AppTheme.primaryColor,
                         child: Text('${schedule.period}'),
                       ),
                       title: Text(schedule.subject),
@@ -66,6 +82,9 @@ class ScheduleScreen extends ConsumerWidget {
                                   child: const Text('取消'),
                                 ),
                                 ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.errorColor,
+                                  ),
                                   onPressed: () => Navigator.pop(context, true),
                                   child: const Text('删除'),
                                 ),
@@ -88,6 +107,7 @@ class ScheduleScreen extends ConsumerWidget {
                         },
                       ),
                     ),
+                  ),
                   );
                 },
               ),

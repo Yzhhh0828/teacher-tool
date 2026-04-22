@@ -71,7 +71,7 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('操作失败：$e')),
         );
       }
     }
@@ -83,50 +83,58 @@ class _StudentFormScreenState extends ConsumerState<StudentFormScreen> {
       appBar: AppBar(
         title: Text(widget.student == null ? '添加学生' : '编辑学生'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: '姓名 *'),
-              validator: (value) => value?.isEmpty == true ? '请输入姓名' : null,
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _gender,
-              decoration: const InputDecoration(labelText: '性别'),
-              items: const [
-                DropdownMenuItem(value: 'male', child: Text('男')),
-                DropdownMenuItem(value: 'female', child: Text('女')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: '姓名 *'),
+                  validator: (value) => value?.isEmpty == true ? '请输入姓名' : null,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _gender,
+                  decoration: const InputDecoration(labelText: '性别'),
+                  items: const [
+                    DropdownMenuItem(value: 'male', child: Text('男')),
+                    DropdownMenuItem(value: 'female', child: Text('女')),
+                  ],
+                  onChanged: (value) => setState(() => _gender = value!),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: const InputDecoration(labelText: '学生电话'),
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _parentPhoneController,
+                  decoration: const InputDecoration(labelText: '家长电话'),
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _remarksController,
+                  decoration: const InputDecoration(labelText: '备注'),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    child: Text(widget.student == null ? '添加' : '保存'),
+                  ),
+                ),
               ],
-              onChanged: (value) => setState(() => _gender = value!),
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _phoneController,
-              decoration: const InputDecoration(labelText: '学生电话'),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _parentPhoneController,
-              decoration: const InputDecoration(labelText: '家长电话'),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _remarksController,
-              decoration: const InputDecoration(labelText: '备注'),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _submit,
-              child: Text(widget.student == null ? '添加' : '保存'),
-            ),
-          ],
+          ),
         ),
       ),
     );

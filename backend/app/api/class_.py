@@ -35,7 +35,7 @@ async def create_class(
     return class_
 
 
-@router.get("")
+@router.get("", response_model=list[ClassResponse])
 async def list_classes(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),

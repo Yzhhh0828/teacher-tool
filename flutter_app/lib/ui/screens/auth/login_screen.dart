@@ -45,15 +45,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authStateProvider);
 
     return Scaffold(
-      // Soft gradient background for the overall login screen
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
               AppTheme.backgroundLight,
-              Color(0xFFEBE8E0),
+              Color(0xFFF3EDE5),
             ],
           ),
         ),
@@ -61,160 +60,146 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo Area
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceWhite,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryGreen.withOpacity(0.1),
-                          blurRadius: 30,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.spa_rounded, // A more organic, calming icon
-                      size: 64,
-                      color: AppTheme.primaryGreen,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  
-                  // Welcome Text
-                  Text(
-                    'Welcome Back',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: AppTheme.primaryGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Sign in to manage your classes',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-
-                  // Phone Input Container
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 20,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: '手机号 (Phone Number)',
-                        prefixIcon: Icon(Icons.phone_outlined),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Actions
-                  if (!_codeSent) ...[
-                    ElevatedButton(
-                      onPressed: authState.isLoading ? null : _sendCode,
-                      child: authState.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('发送验证码 (Send Code)'),
-                    ),
-                    if (authState.debugCode != null) ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: AppTheme.secondaryMaillard.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '调试验证码：${authState.debugCode}',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppTheme.secondaryMaillard,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ] else ...[
-                    // Code Input Container
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: AppTheme.contentMaxWidth),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo
                     Container(
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
+                        color: AppTheme.surfaceWhite,
+                        shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
+                            color: AppTheme.primaryColor.withOpacity(0.12),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
                           ),
                         ],
                       ),
-                      child: TextField(
+                      child: const Icon(
+                        Icons.spa_rounded,
+                        size: 56,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Welcome Text
+                    Text(
+                      '欢迎回来',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '登录以管理你的班级',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 48),
+
+                    // Phone Input
+                    TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: '手机号',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Actions
+                    if (!_codeSent) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: authState.isLoading ? null : _sendCode,
+                          child: authState.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('发送验证码'),
+                        ),
+                      ),
+                      if (authState.debugCode != null) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accent.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(AppTheme.radius),
+                          ),
+                          child: Text(
+                            '调试验证码：${authState.debugCode}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: AppTheme.primaryDark,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ] else ...[
+                      // Code Input
+                      TextField(
                         controller: _codeController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
-                          labelText: '验证码 (Verification Code)',
+                          labelText: '验证码',
                           prefixIcon: Icon(Icons.lock_outline),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: authState.isLoading ? null : _login,
-                      child: authState.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('登录 (Login)'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () => setState(() => _codeSent = false),
-                      child: const Text('返回并修改手机号 (Back)'),
-                    ),
-                  ],
-
-                  // Error Display
-                  if (authState.error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24),
-                      child: Text(
-                        authState.error!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                          fontWeight: FontWeight.w600,
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: authState.isLoading ? null : _login,
+                          child: authState.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('登录'),
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
-                ],
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => setState(() => _codeSent = false),
+                        child: const Text('返回修改手机号'),
+                      ),
+                    ],
+
+                    // Error Display
+                    if (authState.error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24),
+                        child: Text(
+                          authState.error!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

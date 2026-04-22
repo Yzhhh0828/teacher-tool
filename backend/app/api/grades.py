@@ -27,7 +27,7 @@ async def create_exam(
     return exam
 
 
-@router.get("/exams/class/{class_id}")
+@router.get("/exams/class/{class_id}", response_model=list[ExamResponse])
 async def list_exams(
     class_id: int,
     db: AsyncSession = Depends(get_db),
@@ -111,7 +111,7 @@ async def create_grade(
     return grade
 
 
-@router.get("/exams/{exam_id}")
+@router.get("/exams/{exam_id}", response_model=list[GradeResponse])
 async def list_grades(
     exam_id: int,
     db: AsyncSession = Depends(get_db),

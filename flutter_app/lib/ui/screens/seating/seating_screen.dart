@@ -5,6 +5,7 @@ import '../../../providers/class_provider.dart';
 import '../../../providers/student_provider.dart';
 import '../../../data/models/seating.dart';
 import '../../../data/models/student.dart';
+import '../../../core/theme/app_theme.dart';
 
 class SeatingScreen extends ConsumerWidget {
   const SeatingScreen({super.key});
@@ -64,10 +65,10 @@ class SeatingScreen extends ConsumerWidget {
       ),
       body: seatingAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('加载失败：$e')),
         data: (seating) => studentsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => Center(child: Text('加载失败：$e')),
           data: (students) => _buildSeatingGrid(context, ref, seating, students, currentClass.id),
         ),
       ),
@@ -90,16 +91,19 @@ class SeatingScreen extends ConsumerWidget {
           // Front of classroom indicator
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(4),
+              color: AppTheme.primaryColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(AppTheme.radius),
             ),
-            child: const Text(
-              '讲台 (前方)',
+            child: Text(
+              '讲台',
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppTheme.primaryDark,
+              ),
             ),
           ),
           // Seats grid
@@ -119,43 +123,55 @@ class SeatingScreen extends ConsumerWidget {
               final studentId = seating.seats[row][col];
               final student = studentId != null ? studentMap[studentId] : null;
 
-              return GestureDetector(
-                onTap: () => _showSeatAssignmentDialog(
-                  context,
-                  ref,
-                  classId,
-                  row,
-                  col,
-                  studentId,
-                  students,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: student != null ? Colors.blue[100] : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[400]!),
+              return Material(
+                color: student != null
+                    ? AppTheme.primaryColor.withOpacity(0.1)
+                    : AppTheme.dividerColor,
+                borderRadius: BorderRadius.circular(10),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => _showSeatAssignmentDialog(
+                    context,
+                    ref,
+                    classId,
+                    row,
+                    col,
+                    studentId,
+                    students,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${row + 1}-${col + 1}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[600],
-                        ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: student != null
+                            ? AppTheme.primaryColor.withOpacity(0.3)
+                            : AppTheme.dividerColor,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        student?.name ?? '空',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: student != null ? Colors.black87 : Colors.grey[500],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${row + 1}-${col + 1}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppTheme.textSecondary,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          student?.name ?? '空',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: student != null
+                                ? AppTheme.textPrimary
+                                : AppTheme.textSecondary.withOpacity(0.5),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -284,7 +300,7 @@ class SeatingScreen extends ConsumerWidget {
                     title: Text(student.name),
                     subtitle: Text(student.gender == 'male' ? '男' : '女'),
                     trailing: currentStudentId == student.id
-                        ? const Icon(Icons.check, color: Colors.green)
+                        ? const Icon(Icons.check, color: AppTheme.successColor)
                         : null,
                     onTap: () async {
                       Navigator.pop(context);

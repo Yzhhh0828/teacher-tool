@@ -25,7 +25,7 @@ async def create_student(
     return student
 
 
-@router.get("/class/{class_id}")
+@router.get("/class/{class_id}", response_model=list[StudentResponse])
 async def list_students(
     class_id: int,
     db: AsyncSession = Depends(get_db),

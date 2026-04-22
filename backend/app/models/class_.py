@@ -16,7 +16,7 @@ class Class(Base):
     invite_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     owner: Mapped["User"] = relationship("User", back_populates="owned_classes")
-    members: Mapped[list["ClassMember"]] = relationship("ClassMember", back_populates="class_")
+    members: Mapped[list["ClassMember"]] = relationship("ClassMember", back_populates="class_", cascade="all, delete-orphan")
     students: Mapped[list["Student"]] = relationship("Student", back_populates="class_", cascade="all, delete-orphan")
     exams: Mapped[list["Exam"]] = relationship("Exam", back_populates="class_", cascade="all, delete-orphan")
     schedules: Mapped[list["Schedule"]] = relationship("Schedule", back_populates="class_", cascade="all, delete-orphan")

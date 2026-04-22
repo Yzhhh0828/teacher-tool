@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/class_provider.dart';
 import '../../../data/models/class_model.dart';
+import '../../../core/theme/app_theme.dart';
 import 'class_detail_screen.dart';
 
 class ClassListScreen extends ConsumerWidget {
@@ -23,9 +24,20 @@ class ClassListScreen extends ConsumerWidget {
       ),
       body: classesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('加载失败：$e')),
         data: (classes) => classes.isEmpty
-            ? const Center(child: Text('暂无班级，点击+创建'))
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.school_outlined, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
+                    const SizedBox(height: 16),
+                    Text('暂无班级', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    Text('点击右上角 + 创建班级', style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+              )
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: classes.length,
@@ -35,23 +47,28 @@ class ClassListScreen extends ConsumerWidget {
                   final avatarLabel = trimmedName.isEmpty
                       ? '班'
                       : trimmedName.substring(0, 1);
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text(avatarLabel),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Card(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                          foregroundColor: AppTheme.primaryColor,
+                          child: Text(avatarLabel),
+                        ),
+                        title: Text(class_.name),
+                        subtitle: Text('${class_.grade}年级'),
+                        trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                        onTap: () {
+                          ref.read(currentClassProvider.notifier).state = class_;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ClassDetailScreen(classId: class_.id),
+                            ),
+                          );
+                        },
                       ),
-                      title: Text(class_.name),
-                      subtitle: Text('${class_.grade}年级'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        ref.read(currentClassProvider.notifier).state = class_;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ClassDetailScreen(classId: class_.id),
-                          ),
-                        );
-                      },
                     ),
                   );
                 },

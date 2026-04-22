@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/grade_provider.dart';
 import '../../../providers/class_provider.dart';
 import '../../../data/models/grade.dart';
+import '../../../core/theme/app_theme.dart';
 import 'grade_entry_screen.dart';
 
 class ExamListScreen extends ConsumerWidget {
@@ -29,18 +30,33 @@ class ExamListScreen extends ConsumerWidget {
       ),
       body: examsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('加载失败：$e')),
         data: (exams) => exams.isEmpty
-            ? const Center(child: Text('暂无考试，点击+添加'))
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.assignment_outlined, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
+                    const SizedBox(height: 16),
+                    Text('暂无考试', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    Text('点击右上角 + 添加考试', style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+              )
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: exams.length,
                 itemBuilder: (context, index) {
                   final exam = exams[index];
-                  return Card(
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Card(
                     child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.assignment),
+                      leading: CircleAvatar(
+                        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                        foregroundColor: AppTheme.primaryColor,
+                        child: const Icon(Icons.assignment),
                       ),
                       title: Text(exam.name),
                       subtitle: Text(_formatDate(exam.date)),
@@ -61,6 +77,9 @@ class ExamListScreen extends ConsumerWidget {
                                     child: const Text('取消'),
                                   ),
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.errorColor,
+                                    ),
                                     onPressed: () => Navigator.pop(context, true),
                                     child: const Text('删除'),
                                   ),
@@ -84,6 +103,7 @@ class ExamListScreen extends ConsumerWidget {
                         );
                       },
                     ),
+                  ),
                   );
                 },
               ),
@@ -163,7 +183,7 @@ class ExamListScreen extends ConsumerWidget {
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e')),
+                            SnackBar(content: Text('操作失败：$e')),
                           );
                         }
                       } finally {

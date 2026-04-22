@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/class_provider.dart';
 import '../../../providers/student_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import 'random_call_screen.dart';
 
 class PresentationScreen extends ConsumerWidget {
@@ -13,7 +14,7 @@ class PresentationScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentClass?.name ?? '展示端'),
+        title: Text(currentClass?.name ?? '课堂展示'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -24,7 +25,7 @@ class PresentationScreen extends ConsumerWidget {
               icon: Icons.person_search,
               title: '随机点名',
               subtitle: '随机选择一个学生',
-              color: Colors.blue,
+              color: AppTheme.primaryColor,
               onTap: () {
                 Navigator.push(
                   context,
@@ -37,7 +38,7 @@ class PresentationScreen extends ConsumerWidget {
               icon: Icons.timer,
               title: '计时器',
               subtitle: '课堂计时工具',
-              color: Colors.orange,
+              color: AppTheme.accent,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('敬请期待...')),
@@ -49,7 +50,7 @@ class PresentationScreen extends ConsumerWidget {
               icon: Icons.grid_view,
               title: '座位表',
               subtitle: '查看班级座位',
-              color: Colors.green,
+              color: AppTheme.successColor,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('敬请期待...')),
@@ -83,24 +84,31 @@ class _PresentationCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radius),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Row(
             children: [
-              Icon(icon, size: 64, color: color),
-              const SizedBox(width: 24),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 32, color: color),
+              ),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 8),
-                    Text(subtitle, style: Theme.of(context).textTheme.bodyLarge),
+                    Text(title, style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 4),
+                    Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, size: 48),
+              const Icon(Icons.chevron_right, size: 24, color: AppTheme.textSecondary),
             ],
           ),
         ),

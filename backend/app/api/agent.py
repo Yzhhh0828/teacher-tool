@@ -8,8 +8,8 @@ from app.database import get_db
 from app.models.user import User
 from app.api.deps import get_current_user
 from app.agent.chain import AgentChain
-from app.agent.session import get_session, create_session
-
+from app.agent.session import get_session, create_session, delete_session
+from sse_starlette.sse import EventSourceResponse
 
 class ChatRequest(BaseModel):
     content: str
@@ -72,7 +72,6 @@ async def chat(
                 "data": json.dumps({"error": str(e)}),
             }
 
-    from sse_starlette.sse import EventSourceResponse
     return EventSourceResponse(event_generator())
 
 
@@ -102,8 +101,6 @@ async def delete_history(
     current_user: User = Depends(get_current_user),
 ):
     """Delete a conversation session"""
-    from app.agent.session import delete_session
-
     session = get_session(session_id)
 
     if not session:

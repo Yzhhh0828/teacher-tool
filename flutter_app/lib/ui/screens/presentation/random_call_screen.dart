@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/student_provider.dart';
 import '../../../providers/class_provider.dart';
+import '../../../core/theme/app_theme.dart';
 
 class RandomCallScreen extends ConsumerStatefulWidget {
   const RandomCallScreen({super.key});
@@ -34,9 +35,9 @@ class _RandomCallScreenState extends ConsumerState<RandomCallScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF3D3028),
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: const Color(0xFF3D3028),
         foregroundColor: Colors.white,
         title: const Text('随机点名'),
       ),
@@ -60,8 +61,13 @@ class _RandomCallScreenState extends ConsumerState<RandomCallScreen> {
             ElevatedButton(
               onPressed: _pickRandomStudent,
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
-                textStyle: const TextStyle(fontSize: 24),
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
+                textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radius),
+                ),
               ),
               child: const Text('随机选择'),
             ),

@@ -19,11 +19,13 @@ class HomeScreen extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final currentClass = ref.watch(currentClassProvider);
     final classesAsync = ref.watch(classListProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth > 600 ? 3 : 2;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       body: RefreshIndicator(
-        color: AppTheme.primaryGreen,
+        color: AppTheme.primaryColor,
         onRefresh: () => ref.read(classListProvider.notifier).loadClasses(),
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -62,7 +64,7 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.logout_rounded, color: AppTheme.secondaryMaillard, size: 20),
+                      child: const Icon(Icons.logout_rounded, color: AppTheme.primaryDark, size: 20),
                     ),
                     tooltip: '退出登录',
                     onPressed: () async {
@@ -100,7 +102,7 @@ class HomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  'Quick Actions',
+                  '快捷操作',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -108,57 +110,56 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            // Bento Box layout
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 1.1,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 1.15,
                 ),
                 delegate: SliverChildListDelegate.fixed([
                   _ActionTile(
                     icon: Icons.groups_rounded,
                     title: '班级管理',
-                    color: AppTheme.primaryGreen,
+                    color: AppTheme.primaryColor,
                     onTap: () => _openPage(context, const ClassListScreen()),
                   ),
                   _ActionTile(
                     icon: Icons.badge_outlined,
                     title: '学生管理',
-                    color: AppTheme.secondaryMaillard,
+                    color: AppTheme.primaryDark,
                     onTap: () => _openPage(context, const StudentListScreen()),
                   ),
                   _ActionTile(
                     icon: Icons.assignment_outlined,
                     title: '考试成绩',
-                    color: Color(0xFFC08A62),
+                    color: const Color(0xFFB8956A),
                     onTap: () => _openPage(context, const ExamListScreen()),
                   ),
                   _ActionTile(
                     icon: Icons.grid_view_rounded,
                     title: '座位管理',
-                    color: Color(0xFF6B8E7B),
+                    color: AppTheme.successColor,
                     onTap: () => _openPage(context, const SeatingScreen()),
                   ),
                   _ActionTile(
                     icon: Icons.calendar_view_week_outlined,
                     title: '课表管理',
-                    color: AppTheme.secondaryMaillard,
+                    color: const Color(0xFF8E7B6B),
                     onTap: () => _openPage(context, const ScheduleScreen()),
                   ),
                   _ActionTile(
                     icon: Icons.present_to_all_rounded,
                     title: '课堂展示',
-                    color: AppTheme.primaryGreen,
+                    color: AppTheme.accent,
                     onTap: () => _openPage(context, const PresentationScreen()),
                   ),
                   _ActionTile(
                     icon: Icons.smart_toy_outlined,
                     title: 'AI 助手',
-                    color: Color(0xFF9E768F), // Special tint
+                    color: const Color(0xFF9E8678),
                     onTap: () => _openPage(context, const ChatScreen()),
                   ),
                 ]),
@@ -198,8 +199,8 @@ class _OverviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryGreen,
-            AppTheme.primaryGreen.withOpacity(0.85),
+            AppTheme.primaryColor,
+            AppTheme.primaryDark,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -207,7 +208,7 @@ class _OverviewCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryGreen.withOpacity(0.3),
+            color: AppTheme.primaryColor.withOpacity(0.25),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -278,20 +279,12 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceWhite,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
+    return Material(
+      color: AppTheme.surfaceWhite,
+      borderRadius: BorderRadius.circular(AppTheme.radius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radius),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(

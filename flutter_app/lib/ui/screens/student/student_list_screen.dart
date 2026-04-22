@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/student_provider.dart';
 import '../../../providers/class_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import 'student_form_screen.dart';
 
 class StudentListScreen extends ConsumerWidget {
@@ -35,9 +36,20 @@ class StudentListScreen extends ConsumerWidget {
       ),
       body: studentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('加载失败：$e')),
         data: (students) => students.isEmpty
-            ? const Center(child: Text('暂无学生，点击+添加'))
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.people_outline, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
+                    const SizedBox(height: 16),
+                    Text('暂无学生', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    Text('点击右上角 + 添加学生', style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+              )
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: students.length,
@@ -47,54 +59,67 @@ class StudentListScreen extends ConsumerWidget {
                   final avatarLabel = trimmedName.isEmpty
                       ? '生'
                       : trimmedName.substring(0, 1);
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text(avatarLabel),
-                      ),
-                      title: Text(student.name),
-                      subtitle: Text('${student.gender == 'male' ? '男' : '女'} | ${student.phone ?? "无电话"}'),
-                      trailing: PopupMenuButton(
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(value: 'edit', child: Text('编辑')),
-                          const PopupMenuItem(value: 'delete', child: Text('删除')),
-                        ],
-                        onSelected: (value) async {
-                          if (value == 'edit') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => StudentFormScreen(
-                                  classId: currentClass.id,
-                                  student: student,
+                  final isMale = student.gender == 'male';
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Card(
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: isMale
+                              ? AppTheme.primaryColor.withOpacity(0.1)
+                              : AppTheme.accent.withOpacity(0.15),
+                          foregroundColor: isMale
+                              ? AppTheme.primaryColor
+                              : AppTheme.accent,
+                          child: Text(avatarLabel),
+                        ),
+                        title: Text(student.name),
+                        subtitle: Text('${isMale ? '男' : '女'} | ${student.phone ?? "无电话"}'),
+                        trailing: PopupMenuButton(
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(value: 'edit', child: Text('编辑')),
+                            const PopupMenuItem(value: 'delete', child: Text('删除')),
+                          ],
+                          onSelected: (value) async {
+                            if (value == 'edit') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => StudentFormScreen(
+                                    classId: currentClass.id,
+                                    student: student,
+                                  ),
                                 ),
-                              ),
-                            );
-                          } else if (value == 'delete') {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('确认删除'),
-                                content: Text('确定要删除学生 ${student.name} 吗？'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
-                                    child: const Text('取消'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text('删除'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (confirm == true) {
-                              await ref
-                                  .read(studentListProvider(currentClass.id).notifier)
-                                  .deleteStudent(student.id);
+                              );
+                            } else if (value == 'delete') {
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('确认删除'),
+                                  content: Text('确定要删除学生 ${student.name} 吗？'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context, false),
+                                      child: const Text('取消'),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.errorColor,
+                                      ),
+                                      onPressed: () => Navigator.pop(context, true),
+                                      child: const Text('删除'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                await ref
+                                    .read(studentListProvider(currentClass.id).notifier)
+                                    .deleteStudent(student.id);
+                              }
                             }
-                          }
-                        },
+                          },
+                        ),
                       ),
                     ),
                   );
