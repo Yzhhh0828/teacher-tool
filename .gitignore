@@ -16,6 +16,10 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 
+# Flutter SDK (locally downloaded)
+flutter.zip
+flutter/
+
 # IDE / OS
 .DS_Store
 Thumbs.db
