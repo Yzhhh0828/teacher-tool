@@ -14,7 +14,7 @@ class SSEService {
     receiveTimeout: const Duration(seconds: 300),
   ));
 
-  Stream<Map<String, dynamic>> connect(String url, Map<String, dynamic> data) async* {
+  Stream<Map<String, dynamic>> connect(String url, Map<String, dynamic> data, {Map<String, String>? extraHeaders}) async* {
     final token = await _storage.read(key: 'access_token');
     final response = await _dio.post<ResponseBody>(
       url,
@@ -24,6 +24,7 @@ class SSEService {
         headers: {
           'Accept': 'text/event-stream',
           if (token != null) 'Authorization': 'Bearer $token',
+          if (extraHeaders != null) ...extraHeaders,
         },
       ),
     );

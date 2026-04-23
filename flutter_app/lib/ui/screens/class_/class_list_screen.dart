@@ -13,12 +13,28 @@ class ClassListScreen extends ConsumerWidget {
     final classesAsync = ref.watch(classListProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: const Text('我的班级'),
+        backgroundColor: AppTheme.backgroundLight,
+        surfaceTintColor: Colors.transparent,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showCreateClassDialog(context, ref),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton.icon(
+              onPressed: () => _showCreateClassDialog(context, ref),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('创建'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
           ),
         ],
       ),
@@ -30,53 +46,85 @@ class ClassListScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.school_outlined, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
+                    Icon(Icons.school_outlined, size: 56, color: AppTheme.textSecondary.withOpacity(0.3)),
                     const SizedBox(height: 16),
-                    Text('暂无班级', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    Text('点击右上角 + 创建班级', style: Theme.of(context).textTheme.bodyMedium),
+                    Text('还没有班级', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 6),
+                    Text('点击右上角「创建」新建班级', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary)),
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      onPressed: () => _showJoinClassDialog(context, ref),
+                      icon: const Icon(Icons.group_add_outlined, size: 16),
+                      label: const Text('加入已有班级'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
+                        side: const BorderSide(color: AppTheme.primaryColor),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
                   ],
                 ),
               )
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: classes.length,
-                itemBuilder: (context, index) {
-                  final class_ = classes[index];
-                  final trimmedName = class_.name.trim();
-                  final avatarLabel = trimmedName.isEmpty
-                      ? '班'
-                      : trimmedName.substring(0, 1);
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                          foregroundColor: AppTheme.primaryColor,
-                          child: Text(avatarLabel),
-                        ),
-                        title: Text(class_.name),
-                        subtitle: Text('${class_.grade}年级'),
-                        trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
-                        onTap: () {
-                          ref.read(currentClassProvider.notifier).state = class_;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ClassDetailScreen(classId: class_.id),
+            : Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceWhite,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppTheme.borderLight),
+                    ),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: classes.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1, indent: 60, color: AppTheme.dividerColor),
+                      itemBuilder: (context, index) {
+                        final class_ = classes[index];
+                        final trimmedName = class_.name.trim();
+                        final avatarLabel = trimmedName.isEmpty ? '班' : trimmedName.substring(0, 1);
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          leading: CircleAvatar(
+                            radius: 21,
+                            backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                            child: Text(
+                              avatarLabel,
+                              style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w700, fontSize: 15),
                             ),
-                          );
-                        },
+                          ),
+                          title: Text(class_.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          subtitle: Text('${class_.grade} 年级', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                          trailing: const Icon(Icons.chevron_right, size: 20, color: AppTheme.textSecondary),
+                          onTap: () {
+                            ref.read(currentClassProvider.notifier).state = class_;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => ClassDetailScreen(classId: class_.id)),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showJoinClassDialog(context, ref),
+                      icon: const Icon(Icons.group_add_outlined, size: 16),
+                      label: const Text('加入已有班级'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
+                        side: const BorderSide(color: AppTheme.borderLight),
+                        backgroundColor: AppTheme.surfaceWhite,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        minimumSize: const Size(180, 0),
                       ),
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showJoinClassDialog(context, ref),
-        child: const Icon(Icons.group_add),
       ),
     );
   }

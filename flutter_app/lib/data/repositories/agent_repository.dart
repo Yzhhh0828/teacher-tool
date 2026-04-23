@@ -12,6 +12,7 @@ class AgentRepository {
     required String message,
     String? sessionId,
     String? image,
+    Map<String, String>? llmHeaders,
   }) {
     return _sseService.connect(
       ApiConfig.agentChat,
@@ -20,6 +21,7 @@ class AgentRepository {
         'session_id': sessionId,
         'image': image,
       },
+      extraHeaders: llmHeaders,
     );
   }
 

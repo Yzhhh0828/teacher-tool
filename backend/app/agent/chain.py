@@ -10,30 +10,35 @@ from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.session import ConversationSession, get_session, create_session
 
 
-def get_llm():
-    """Get LLM client based on configuration"""
-    if settings.LLM_PROVIDER == "openai":
+def get_llm(override: dict = None):
+    """Get LLM client based on configuration, with optional per-request overrides"""
+    override = override or {}
+    provider = override.get("provider") or settings.LLM_PROVIDER
+    api_key_override = override.get("api_key") or None
+    base_url_override = override.get("base_url") or None
+
+    if provider == "openai":
         return ChatOpenAI(
-            api_key=settings.OPENAI_API_KEY,
-            base_url=settings.OPENAI_BASE_URL,
+            api_key=api_key_override or settings.OPENAI_API_KEY,
+            base_url=base_url_override or settings.OPENAI_BASE_URL,
             model="gpt-4o",
             streaming=True,
         )
-    elif settings.LLM_PROVIDER == "anthropic":
+    elif provider == "anthropic":
         return ChatAnthropic(
-            api_key=settings.ANTHROPIC_API_KEY,
-            base_url=settings.ANTHROPIC_BASE_URL,
-            model="claude-sonnet-4-6-20250514",
+            api_key=api_key_override or settings.ANTHROPIC_API_KEY,
+            base_url=base_url_override or settings.ANTHROPIC_BASE_URL,
+            model="claude-sonnet-4-5",
             streaming=True,
         )
     else:
-        raise ValueError(f"Unknown LLM provider: {settings.LLM_PROVIDER}")
+        raise ValueError(f"Unknown LLM provider: {provider}")
 
 
 class AgentChain:
-    def __init__(self, session: ConversationSession, db: AsyncSession = None):
+    def __init__(self, session: ConversationSession, db: AsyncSession = None, llm_override: dict = None):
         self.session = session
-        self.llm = get_llm()
+        self.llm = get_llm(llm_override)
         self.db = db
         self.confirmation_level = "medium"  # low, medium, high
 

@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../agent/chat_screen.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/class_provider.dart';
+import '../../../providers/schedule_provider.dart';
+import '../../../providers/student_provider.dart';
 import '../../../core/theme/app_theme.dart';
-import '../class_/class_list_screen.dart';
-import '../grade/exam_list_screen.dart';
-import '../presentation/presentation_screen.dart';
-import '../schedule/schedule_screen.dart';
-import '../seating/seating_screen.dart';
-import '../student/student_list_screen.dart';
+import '../class_/class_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
+  static const _weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
     final currentClass = ref.watch(currentClassProvider);
     final classesAsync = ref.watch(classListProvider);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final crossAxisCount = screenWidth > 600 ? 3 : 2;
+
+    final now = DateTime.now();
+    final greeting = now.hour < 12 ? '早上好' : now.hour < 18 ? '下午好' : '晚上好';
+    final phone = authState.user?.phone ?? '';
+    final displayName = phone.length >= 4 ? phone.substring(phone.length - 4) : phone;
+
+    final todaySchedulesAsync = currentClass != null
+        ? ref.watch(scheduleListProvider(currentClass.id))
+        : null;
+    final todayWeekday = now.weekday - 1;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -28,287 +34,360 @@ class HomeScreen extends ConsumerWidget {
         color: AppTheme.primaryColor,
         onRefresh: () => ref.read(classListProvider.notifier).loadClasses(),
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            SliverAppBar(
-              expandedHeight: 120.0,
-              floating: false,
-              pinned: true,
-              backgroundColor: AppTheme.backgroundLight,
-              elevation: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
-                title: Text(
-                  '教师工作台',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppTheme.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.surfaceWhite,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.logout_rounded, color: AppTheme.primaryDark, size: 20),
-                    ),
-                    tooltip: '退出登录',
-                    onPressed: () async {
-                      await ref.read(authStateProvider.notifier).logout();
-                    },
-                  ),
-                ),
-              ],
-            ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                child: _OverviewCard(
-                  title: authState.user?.phone ?? '未识别账号',
-                  subtitle: currentClass == null
-                      ? '当前还没有选中的班级，先去班级列表选择一个班级。'
-                      : '当前班级：${currentClass.name} · ${currentClass.grade}',
-                  trailingIcon: Icons.auto_awesome,
-                  classCountWidget: classesAsync.when(
-                    loading: () => const SizedBox(
-                      width: 16, height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$greeting，$displayName',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
                     ),
-                    error: (_, __) => const Icon(Icons.error_outline, color: Colors.white),
-                    data: (classes) => Text(
-                      '${classes.length} 个班级',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatDate(now),
+                      style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              sliver: SliverToBoxAdapter(
-                child: Text(
-                  '快捷操作',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+            // Stats row
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: classesAsync.when(
+                  loading: () => const SizedBox(height: 72, child: Center(child: CircularProgressIndicator())),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (classes) => Row(
+                    children: [
+                      _StatChip(
+                        label: '${classes.length}',
+                        sublabel: '个班级',
+                        icon: Icons.school_outlined,
+                        color: AppTheme.primaryColor,
+                      ),
+                      const SizedBox(width: 12),
+                      if (currentClass != null) ...[
+                        Consumer(builder: (ctx, r, _) {
+                          final students = r.watch(studentListProvider(currentClass.id));
+                          return students.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (list) => _StatChip(
+                              label: '${list.length}',
+                              sublabel: '名学生',
+                              icon: Icons.people_outline,
+                              color: AppTheme.accent,
+                            ),
+                          );
+                        }),
+                        const SizedBox(width: 12),
+                        if (todaySchedulesAsync != null)
+                          Consumer(builder: (ctx, r, _) {
+                            final schedules = r.watch(scheduleListProvider(currentClass.id));
+                            return schedules.when(
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, __) => const SizedBox.shrink(),
+                              data: (list) {
+                                final todayCount = list.where((s) => s.dayOfWeek == todayWeekday).length;
+                                return _StatChip(
+                                  label: '$todayCount',
+                                  sublabel: '节课今天',
+                                  icon: Icons.today_outlined,
+                                  color: AppTheme.successColor,
+                                );
+                              },
+                            );
+                          }),
+                      ],
+                    ],
                   ),
                 ),
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 1.15,
+            // Current class card
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: classesAsync.when(
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (classes) {
+                    if (classes.isEmpty) {
+                      return _EmptyClassCard(onTap: () {});
+                    }
+                    final cls = currentClass ?? classes.first;
+                    if (currentClass == null) {
+                      Future.microtask(() => ref.read(currentClassProvider.notifier).state = classes.first);
+                    }
+                    return _CurrentClassCard(
+                      className: cls.name,
+                      grade: cls.grade,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => ClassDetailScreen(classId: cls.id)),
+                        );
+                      },
+                    );
+                  },
                 ),
-                delegate: SliverChildListDelegate.fixed([
-                  _ActionTile(
-                    icon: Icons.groups_rounded,
-                    title: '班级管理',
-                    color: AppTheme.primaryColor,
-                    onTap: () => _openPage(context, const ClassListScreen()),
-                  ),
-                  _ActionTile(
-                    icon: Icons.badge_outlined,
-                    title: '学生管理',
-                    color: AppTheme.primaryDark,
-                    onTap: () => _openPage(context, const StudentListScreen()),
-                  ),
-                  _ActionTile(
-                    icon: Icons.assignment_outlined,
-                    title: '考试成绩',
-                    color: const Color(0xFFB8956A),
-                    onTap: () => _openPage(context, const ExamListScreen()),
-                  ),
-                  _ActionTile(
-                    icon: Icons.grid_view_rounded,
-                    title: '座位管理',
-                    color: AppTheme.successColor,
-                    onTap: () => _openPage(context, const SeatingScreen()),
-                  ),
-                  _ActionTile(
-                    icon: Icons.calendar_view_week_outlined,
-                    title: '课表管理',
-                    color: const Color(0xFF8E7B6B),
-                    onTap: () => _openPage(context, const ScheduleScreen()),
-                  ),
-                  _ActionTile(
-                    icon: Icons.present_to_all_rounded,
-                    title: '课堂展示',
-                    color: AppTheme.accent,
-                    onTap: () => _openPage(context, const PresentationScreen()),
-                  ),
-                  _ActionTile(
-                    icon: Icons.smart_toy_outlined,
-                    title: 'AI 助手',
-                    color: const Color(0xFF9E8678),
-                    onTap: () => _openPage(context, const ChatScreen()),
-                  ),
-                ]),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 48)),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            // Today's schedule
+            if (currentClass != null && todaySchedulesAsync != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            '今日课程',
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(7),
+                            ),
+                            child: Text(
+                              _weekdays[todayWeekday],
+                              style: const TextStyle(fontSize: 13, color: AppTheme.primaryColor, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Consumer(builder: (ctx, r, _) {
+                        final schedules = r.watch(scheduleListProvider(currentClass.id));
+                        return schedules.when(
+                          loading: () => const Center(child: CircularProgressIndicator()),
+                          error: (_, __) => const SizedBox.shrink(),
+                          data: (list) {
+                            final today = list.where((s) => s.dayOfWeek == todayWeekday).toList()
+                              ..sort((a, b) => a.period.compareTo(b.period));
+                            if (today.isEmpty) {
+                              return _EmptyState(
+                                icon: Icons.wb_sunny_outlined,
+                                message: '今天没有课程，好好休息',
+                                small: true,
+                              );
+                            }
+                            return Column(
+                              children: today.map((s) => _ScheduleRow(schedule: s)).toList(),
+                            );
+                          },
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
           ],
         ),
       ),
     );
   }
 
-  void _openPage(BuildContext context, Widget page) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => page),
-    );
+  String _formatDate(DateTime d) {
+    const months = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
+    const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    return '${d.year} 年 ${months[d.month - 1]} 月 ${d.day} 日  ${days[d.weekday - 1]}';
   }
 }
 
-class _OverviewCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData trailingIcon;
-  final Widget classCountWidget;
-
-  const _OverviewCard({
-    required this.title,
-    required this.subtitle,
-    required this.trailingIcon,
-    required this.classCountWidget,
-  });
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String sublabel;
+  final IconData icon;
+  final Color color;
+  const _StatChip({required this.label, required this.sublabel, required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryColor,
-            AppTheme.primaryDark,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.25),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: AppTheme.surfaceWhite,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.borderLight),
       ),
-      child: Stack(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Icon(
-              trailingIcon,
-              size: 100,
-              color: Colors.white.withOpacity(0.1),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: classCountWidget,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withOpacity(0.9),
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 8),
+          Text(label, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20, color: color)),
+          const SizedBox(width: 4),
+          Text(sublabel, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
         ],
       ),
     );
   }
 }
 
-class _ActionTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Color color;
+class _CurrentClassCard extends StatelessWidget {
+  final String className;
+  final String grade;
   final VoidCallback onTap;
-
-  const _ActionTile({
-    required this.icon,
-    required this.title,
-    required this.color,
-    required this.onTap,
-  });
+  const _CurrentClassCard({required this.className, required this.grade, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppTheme.surfaceWhite,
-      borderRadius: BorderRadius.circular(AppTheme.radius),
+      color: AppTheme.primaryColor,
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radius),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(icon, color: color, size: 28),
+                child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
               ),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      className,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '$grade年级  ·  点击查看详情',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13),
+                    ),
+                  ],
                 ),
               ),
+              Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.7)),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _EmptyClassCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _EmptyClassCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderLight),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.school_outlined, size: 36, color: AppTheme.textSecondary.withOpacity(0.4)),
+          const SizedBox(height: 8),
+          Text('还没有班级', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 4),
+          Text('前往「班级」标签创建你的第一个班级',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScheduleRow extends StatelessWidget {
+  final dynamic schedule;
+  const _ScheduleRow({required this.schedule});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.borderLight),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Center(
+              child: Text(
+                '${schedule.period}',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.primaryColor),
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              schedule.subject,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.textPrimary),
+            ),
+          ),
+          if (schedule.classroom?.isNotEmpty == true)
+            Text(
+              schedule.classroom!,
+              style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  final bool small;
+  const _EmptyState({required this.icon, required this.message, this.small = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: small ? 16 : 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: small ? 32 : 48, color: AppTheme.textSecondary.withOpacity(0.3)),
+          const SizedBox(height: 8),
+          Text(message,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary),
+              textAlign: TextAlign.center),
+        ],
       ),
     );
   }

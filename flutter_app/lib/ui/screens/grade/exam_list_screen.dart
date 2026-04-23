@@ -19,12 +19,28 @@ class ExamListScreen extends ConsumerWidget {
     final examsAsync = ref.watch(examListProvider(currentClass.id));
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: const Text('考试管理'),
+        backgroundColor: AppTheme.backgroundLight,
+        surfaceTintColor: Colors.transparent,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showCreateExamDialog(context, ref, currentClass.id),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: FilledButton.icon(
+              onPressed: () => _showCreateExamDialog(context, ref, currentClass.id),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('创建'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
           ),
         ],
       ),
@@ -36,11 +52,11 @@ class ExamListScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.assignment_outlined, size: 64, color: AppTheme.textSecondary.withOpacity(0.4)),
+                    Icon(Icons.assignment_outlined, size: 56, color: AppTheme.textSecondary.withOpacity(0.3)),
                     const SizedBox(height: 16),
                     Text('暂无考试', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    Text('点击右上角 + 添加考试', style: Theme.of(context).textTheme.bodyMedium),
+                    const SizedBox(height: 6),
+                    Text('点击右上角「创建」添加考试', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary)),
                   ],
                 ),
               )

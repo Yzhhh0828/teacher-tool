@@ -1,7 +1,7 @@
 import uuid
 import json
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
@@ -21,6 +21,7 @@ router = APIRouter(prefix="/agent", tags=["agent"])
 
 @router.post("/chat")
 async def chat(
+    request: Request,
     message: ChatRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -44,8 +45,15 @@ async def chat(
         session_id = str(uuid.uuid4())
         session = create_session(session_id, current_user.id)
 
+    # Read optional LLM override headers from frontend settings
+    llm_override = {
+        "provider": request.headers.get("X-LLM-Provider"),
+        "api_key": request.headers.get("X-API-Key"),
+        "base_url": request.headers.get("X-Base-URL"),
+    }
+
     # Create agent chain with db
-    agent = AgentChain(session, db)
+    agent = AgentChain(session, db, llm_override=llm_override)
 
     async def event_generator():
         try:

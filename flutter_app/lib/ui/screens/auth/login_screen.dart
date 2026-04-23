@@ -133,9 +133,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               : const Text('发送验证码'),
                         ),
                       ),
+                    ] else ...[
+                      // Debug code hint (shown above the input for easy reference)
                       if (authState.debugCode != null) ...[
-                        const SizedBox(height: 16),
                         Container(
+                          width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                           decoration: BoxDecoration(
                             color: AppTheme.accent.withOpacity(0.15),
@@ -150,8 +152,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 16),
                       ],
-                    ] else ...[
                       // Code Input
                       TextField(
                         controller: _codeController,

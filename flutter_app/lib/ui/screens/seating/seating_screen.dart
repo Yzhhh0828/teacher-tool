@@ -14,15 +14,30 @@ class SeatingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentClass = ref.watch(currentClassProvider);
     if (currentClass == null) {
-      return const Center(child: Text('请先选择班级'));
+      return Scaffold(
+        appBar: AppBar(title: const Text('座位管理')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.grid_view_outlined, size: 48, color: AppTheme.textSecondary.withOpacity(0.3)),
+              const SizedBox(height: 12),
+              const Text('请先在「班级」中选择班级'),
+            ],
+          ),
+        ),
+      );
     }
 
     final seatingAsync = ref.watch(seatingProvider(currentClass.id));
     final studentsAsync = ref.watch(studentListProvider(currentClass.id));
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: const Text('座位管理'),
+        backgroundColor: AppTheme.backgroundLight,
+        surfaceTintColor: Colors.transparent,
         actions: [
           IconButton(
             icon: const Icon(Icons.shuffle),

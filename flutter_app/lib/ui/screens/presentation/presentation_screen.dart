@@ -13,106 +13,87 @@ class PresentationScreen extends ConsumerWidget {
     final currentClass = ref.watch(currentClassProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: Text(currentClass?.name ?? '课堂展示'),
+        backgroundColor: AppTheme.backgroundLight,
+        surfaceTintColor: Colors.transparent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _PresentationCard(
-              icon: Icons.person_search,
-              title: '随机点名',
-              subtitle: '随机选择一个学生',
-              color: AppTheme.primaryColor,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RandomCallScreen()),
-                );
-              },
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceWhite,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppTheme.borderLight),
             ),
-            const SizedBox(height: 16),
-            _PresentationCard(
-              icon: Icons.timer,
-              title: '计时器',
-              subtitle: '课堂计时工具',
-              color: AppTheme.accent,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('敬请期待...')),
-                );
-              },
+            child: Column(
+              children: [
+                _ToolTile(
+                  icon: Icons.person_search_outlined,
+                  title: '随机点名',
+                  subtitle: '随机选择一名学生',
+                  color: AppTheme.primaryColor,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RandomCallScreen())),
+                ),
+                const Divider(height: 1, indent: 60, color: AppTheme.dividerColor),
+                _ToolTile(
+                  icon: Icons.timer_outlined,
+                  title: '计时器',
+                  subtitle: '课堂倒计时工具（敬请期待）',
+                  color: AppTheme.accent,
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('敬请期待...'))),
+                ),
+                const Divider(height: 1, indent: 60, color: AppTheme.dividerColor),
+                _ToolTile(
+                  icon: Icons.grid_view_outlined,
+                  title: '座位总览',
+                  subtitle: '课堂展示班级座位（敬请期待）',
+                  color: AppTheme.successColor,
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('敬请期待...'))),
+                  isLast: true,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            _PresentationCard(
-              icon: Icons.grid_view,
-              title: '座位表',
-              subtitle: '查看班级座位',
-              color: AppTheme.successColor,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('敬请期待...')),
-                );
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _PresentationCard extends StatelessWidget {
+class _ToolTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final Color color;
   final VoidCallback onTap;
+  final bool isLast;
 
-  const _PresentationCard({
+  const _ToolTile({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
     required this.onTap,
+    this.isLast = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radius),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(icon, size: 32, color: color),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, size: 24, color: AppTheme.textSecondary),
-            ],
-          ),
-        ),
+    return ListTile(
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(9)),
+        child: Icon(icon, color: color, size: 18),
       ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+      trailing: const Icon(Icons.chevron_right, size: 18, color: AppTheme.textSecondary),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      onTap: onTap,
     );
   }
 }

@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Warm Earth Color Palette
-  static const Color primaryColor = Color(0xFFC08A62);
-  static const Color primaryDark = Color(0xFF8B6F4E);
-  static const Color accent = Color(0xFFD4A574);
-  static const Color backgroundLight = Color(0xFFFBF8F4);
+  // Warm Orange Minimal Palette
+  static const Color primaryColor = Color(0xFFE07A3F);
+  static const Color primaryDark = Color(0xFFB85D28);
+  static const Color accent = Color(0xFFF5A468);
+  static const Color backgroundLight = Color(0xFFFAFAF7);
   static const Color surfaceWhite = Color(0xFFFFFFFF);
-  static const Color textPrimary = Color(0xFF3D3028);
-  static const Color textSecondary = Color(0xFF9E8E7E);
-  static const Color dividerColor = Color(0xFFF0EAE2);
-  static const Color errorColor = Color(0xFFBF4B4B);
-  static const Color successColor = Color(0xFF6B9E78);
+  static const Color surfaceSubtle = Color(0xFFF5F2EC);
+  static const Color textPrimary = Color(0xFF2D2418);
+  static const Color textSecondary = Color(0xFF8C7B68);
+  static const Color dividerColor = Color(0xFFEDE8E1);
+  static const Color borderLight = Color(0xFFEDE8E1);
+  static const Color errorColor = Color(0xFFD94F3D);
+  static const Color successColor = Color(0xFF5A9E72);
 
   static const double radius = 16.0;
   static const double contentMaxWidth = 480.0;
@@ -28,6 +30,7 @@ class AppTheme {
         secondary: primaryDark,
         tertiary: accent,
         surface: surfaceWhite,
+        surfaceContainerHighest: surfaceSubtle,
         error: errorColor,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
@@ -40,20 +43,22 @@ class AppTheme {
         displaySmall: baseTextTheme.displaySmall?.copyWith(color: textPrimary, fontWeight: FontWeight.w700),
         headlineLarge: baseTextTheme.headlineLarge?.copyWith(color: textPrimary, fontWeight: FontWeight.w600),
         headlineMedium: baseTextTheme.headlineMedium?.copyWith(color: textPrimary, fontWeight: FontWeight.w600),
-        titleLarge: baseTextTheme.titleLarge?.copyWith(color: textPrimary, fontWeight: FontWeight.w600),
-        titleMedium: baseTextTheme.titleMedium?.copyWith(color: textPrimary, fontWeight: FontWeight.w500),
-        bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: textPrimary),
-        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: textSecondary),
+        titleLarge: baseTextTheme.titleLarge?.copyWith(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 20),
+        titleMedium: baseTextTheme.titleMedium?.copyWith(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 16),
+        titleSmall: baseTextTheme.titleSmall?.copyWith(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+        bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: textPrimary, fontSize: 16),
+        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: textSecondary, fontSize: 15),
+        bodySmall: baseTextTheme.bodySmall?.copyWith(color: textSecondary, fontSize: 13),
       ),
       appBarTheme: AppBarTheme(
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
         backgroundColor: backgroundLight,
         foregroundColor: textPrimary,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: GoogleFonts.outfit(
           color: textPrimary,
-          fontSize: 20,
+          fontSize: 22,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -151,7 +156,10 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        titleTextStyle: GoogleFonts.outfit(color: textPrimary, fontSize: 15, fontWeight: FontWeight.w500),
+        subtitleTextStyle: GoogleFonts.outfit(color: textSecondary, fontSize: 13),
+        minVerticalPadding: 12,
       ),
     );
   }

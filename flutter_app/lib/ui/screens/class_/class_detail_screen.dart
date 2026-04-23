@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/class_model.dart';
 import '../../../providers/class_provider.dart';
@@ -32,15 +33,50 @@ class ClassDetailScreen extends ConsumerWidget {
               try {
                 final code = await repository.createInviteCode(classId);
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('邀请码: $code')),
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('邀请码'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceSubtle,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppTheme.borderLight),
+                            ),
+                            child: Text(
+                              code,
+                              style: const TextStyle(fontFamily: 'monospace', fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.primaryColor, letterSpacing: 2),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('将此邀请码分享给其他老师加入班级', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary), textAlign: TextAlign.center),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
+                        FilledButton.icon(
+                          icon: const Icon(Icons.copy, size: 16),
+                          label: const Text('复制'),
+                          style: FilledButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: code));
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('邀请码已复制')));
+                          },
+                        ),
+                      ],
+                    ),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('生成邀请码失败：$e')),
-                  );
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('生成邀请码失败：$e')));
                 }
               }
             },
@@ -75,60 +111,62 @@ class ClassDetailScreen extends ConsumerWidget {
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        classInfo.name,
-                        style: Theme.of(context).textTheme.headlineSmall,
+              // Header info strip
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceWhite,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.borderLight),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 26,
+                      backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                      child: Text(
+                        classInfo.name.trim().isEmpty ? '班' : classInfo.name.trim().substring(0, 1),
+                        style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w700, fontSize: 20),
                       ),
-                      const SizedBox(height: 8),
-                      Text('班级 ID：${classInfo.id}'),
-                      Text('年级：${classInfo.grade}'),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(classInfo.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: AppTheme.textPrimary)),
+                          const SizedBox(height: 3),
+                          Text('${classInfo.grade} 年级', style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                '班级功能',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
-              _EntryTile(
-                icon: Icons.badge_outlined,
-                title: '学生管理',
-                subtitle: '查看、添加和维护班级学生',
-                onTap: () => _openPage(context, const StudentListScreen()),
-              ),
-              _EntryTile(
-                icon: Icons.assignment_outlined,
-                title: '考试成绩',
-                subtitle: '创建考试并录入成绩',
-                onTap: () => _openPage(context, const ExamListScreen()),
-              ),
-              _EntryTile(
-                icon: Icons.grid_view_outlined,
-                title: '座位表',
-                subtitle: '维护班级座位布局',
-                onTap: () => _openPage(context, const SeatingScreen()),
-              ),
-              _EntryTile(
-                icon: Icons.calendar_view_week_outlined,
-                title: '课表管理',
-                subtitle: '查看并维护班级课表',
-                onTap: () => _openPage(context, const ScheduleScreen()),
-              ),
-              _EntryTile(
-                icon: Icons.present_to_all_outlined,
-                title: '课堂展示',
-                subtitle: '随机点名与课堂展示工具',
-                onTap: () => _openPage(context, const PresentationScreen()),
+              const Text('班级功能', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: 0.3)),
+              const SizedBox(height: 10),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 2.4,
+                children: [
+                  _GridEntry(icon: Icons.badge_outlined, title: '学生管理', color: AppTheme.primaryColor,
+                      onTap: () => _openPage(context, const StudentListScreen())),
+                  _GridEntry(icon: Icons.assignment_outlined, title: '考试成绩', color: const Color(0xFFD97A3A),
+                      onTap: () => _openPage(context, const ExamListScreen())),
+                  _GridEntry(icon: Icons.grid_view_outlined, title: '座位表', color: AppTheme.successColor,
+                      onTap: () => _openPage(context, const SeatingScreen())),
+                  _GridEntry(icon: Icons.calendar_view_week_outlined, title: '课表管理', color: const Color(0xFF7A9EC7),
+                      onTap: () => _openPage(context, const ScheduleScreen())),
+                  _GridEntry(icon: Icons.present_to_all_outlined, title: '课堂展示', color: AppTheme.accent,
+                      onTap: () => _openPage(context, const PresentationScreen())),
+                ],
               ),
             ],
           );
@@ -144,36 +182,50 @@ class ClassDetailScreen extends ConsumerWidget {
   }
 }
 
-class _EntryTile extends StatelessWidget {
+class _GridEntry extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
+  final Color color;
   final VoidCallback onTap;
 
-  const _EntryTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+  const _GridEntry({required this.icon, required this.title, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppTheme.primaryColor),
-        ),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+    return Material(
+      color: AppTheme.surfaceWhite,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.borderLight),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.textPrimary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

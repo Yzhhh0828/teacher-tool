@@ -1,17 +1,18 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 class ApiConfig {
   static String get baseUrl {
     const envUrl = String.fromEnvironment('API_BASE_URL');
     if (envUrl.isNotEmpty) return envUrl;
-    
-    // Android emulator runs in a VM, so localhost points to the VM itself.
-    // 10.0.2.2 is the special alias to your host loopback interface.
-    if (!kIsWeb && Platform.isAndroid) {
+
+    // Web: served from same origin as backend — use relative path
+    if (kIsWeb) return '/api/v1';
+
+    // Android emulator uses 10.0.2.2 to reach host loopback
+    if (defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8000/api/v1';
     }
-    return 'http://127.0.0.1:8000/api/v1'; // Also use 127.0.0.1 which is generally safer than localhost in some environments.
+    return 'http://127.0.0.1:8000/api/v1';
   }
 
   // Auth
