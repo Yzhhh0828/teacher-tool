@@ -46,7 +46,11 @@ class ExamListNotifier extends StateNotifier<AsyncValue<List<Exam>>> {
   }
 }
 
-final examGradesProvider = StateNotifierProvider.family<ExamGradesNotifier, AsyncValue<List<Grade>>, int>((ref, examId) {
+/// Per-exam grades cache. Auto-disposes when no screen is reading it so we
+/// don't keep grades for every historical exam in memory after navigating
+/// away from the exam detail page.
+final examGradesProvider = StateNotifierProvider.autoDispose
+    .family<ExamGradesNotifier, AsyncValue<List<Grade>>, int>((ref, examId) {
   return ExamGradesNotifier(ref.read(gradeRepositoryProvider), examId);
 });
 

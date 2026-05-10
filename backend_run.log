@@ -197,3 +197,4 @@ WHERE behavior_categories.class_id = ? ORDER BY behavior_categories.sort_order
 2026-05-10 22:34:35,389 INFO sqlalchemy.engine.Engine [cached since 8.78s ago] (2,)
 INFO:     127.0.0.1:57241 - "GET /api/v1/behavior/categories/class/2 HTTP/1.1" 200 OK
 2026-05-10 22:34:35,390 INFO sqlalchemy.engine.Engine COMMIT
+WARNING:  WatchFiles detected changes in 'tests\test_e2e_seating_behavior_invite.py'. Reloading...
