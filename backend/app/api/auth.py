@@ -38,7 +38,7 @@ async def send_code(request: SendCodeRequest, db: AsyncSession = Depends(get_db)
             password_hash=get_password_hash(secrets.token_urlsafe(32)),
         )
         db.add(user)
-        await db.commit()
+        await db.flush()
         await db.refresh(user)
 
     fixed_code = (

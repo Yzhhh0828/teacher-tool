@@ -21,6 +21,7 @@ class Class(Base):
     exams: Mapped[list["Exam"]] = relationship("Exam", back_populates="class_", cascade="all, delete-orphan")
     schedules: Mapped[list["Schedule"]] = relationship("Schedule", back_populates="class_", cascade="all, delete-orphan")
     seating: Mapped["Seating"] = relationship("Seating", back_populates="class_", uselist=False, cascade="all, delete-orphan")
+    seating_layouts: Mapped[list["SeatingLayout"]] = relationship("SeatingLayout", back_populates="class_", cascade="all, delete-orphan")
 
 
 class ClassMember(Base):

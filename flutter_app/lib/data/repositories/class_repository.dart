@@ -42,4 +42,29 @@ class ClassRepository {
   Future<void> deleteClass(int classId) async {
     await _client.delete(ApiConfig.classDetail(classId));
   }
+
+  // ─── Members management ───────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> getMembers(int classId) async {
+    final response = await _client.get(ApiConfig.classMembers(classId));
+    return (response.data as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> updateMember(int classId, int memberId, {String? subject, String? role}) async {
+    await _client.put(
+      ApiConfig.classMember(classId, memberId),
+      data: {
+        if (subject != null) 'subject': subject,
+        if (role != null) 'role': role,
+      },
+    );
+  }
+
+  Future<void> removeMember(int classId, int memberId) async {
+    await _client.delete(ApiConfig.classMember(classId, memberId));
+  }
+
+  Future<void> revokeInviteCode(int classId) async {
+    await _client.delete(ApiConfig.revokeInviteCode(classId));
+  }
 }

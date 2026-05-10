@@ -4,9 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
 from app.models.user import User
-from app.models.seating import Seating
+from app.models.seating import Seating, SeatingLayout
 from app.models.student import Student
-from app.schemas.seating import SeatingUpdate, SeatingResponse, ShuffleResponse
+from app.schemas.seating import (
+    SeatingUpdate, SeatingResponse, ShuffleResponse,
+    SeatingLayoutCreate, SeatingLayoutUpdate, SeatingLayoutResponse,
+)
 from app.api.deps import get_current_user, check_class_permission
 
 router = APIRouter(prefix="/seating", tags=["seating"])
@@ -49,7 +52,7 @@ async def get_seating(
         seats = create_default_seats(6, 8, student_ids)
         seating = Seating(class_id=class_id, rows=6, cols=8, seats=seats)
         db.add(seating)
-        await db.commit()
+        await db.flush()
         await db.refresh(seating)
 
     return seating
@@ -78,7 +81,7 @@ async def update_seating(
     if data.seats is not None:
         seating.seats = data.seats
 
-    await db.commit()
+    await db.flush()
     await db.refresh(seating)
     return seating
 
@@ -114,7 +117,114 @@ async def shuffle_seats(
     seats = create_default_seats(seating.rows, seating.cols, student_ids)
     seating.seats = seats
 
-    await db.commit()
+    await db.flush()
     await db.refresh(seating)
 
     return ShuffleResponse(success=True, seats=seats)
+
+
+# ── Seating layouts (named plans) ────────────────────────────────────────
+
+@router.get("/layouts/class/{class_id}", response_model=list[SeatingLayoutResponse])
+async def list_layouts(
+    class_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await check_class_permission(db, class_id, current_user)
+    result = await db.execute(
+        select(SeatingLayout)
+        .where(SeatingLayout.class_id == class_id)
+        .order_by(SeatingLayout.created_at.desc())
+    )
+    return result.scalars().all()
+
+
+@router.post("/layouts/class/{class_id}", response_model=SeatingLayoutResponse)
+async def create_layout(
+    class_id: int,
+    data: SeatingLayoutCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    await check_class_permission(db, class_id, current_user, require_owner=True)
+    layout = SeatingLayout(
+        class_id=class_id,
+        name=data.name,
+        rows=data.rows,
+        cols=data.cols,
+        seats=data.seats or [],
+        is_active=data.is_active,
+    )
+    db.add(layout)
+    await db.flush()
+    await db.refresh(layout)
+    return layout
+
+
+@router.put("/layouts/{layout_id}", response_model=SeatingLayoutResponse)
+async def update_layout(
+    layout_id: int,
+    data: SeatingLayoutUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(SeatingLayout).where(SeatingLayout.id == layout_id))
+    layout = result.scalar_one_or_none()
+    if not layout:
+        raise HTTPException(status_code=404, detail="Layout not found")
+    await check_class_permission(db, layout.class_id, current_user, require_owner=True)
+
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(layout, key, value)
+
+    await db.flush()
+    await db.refresh(layout)
+    return layout
+
+
+@router.delete("/layouts/{layout_id}")
+async def delete_layout(
+    layout_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(SeatingLayout).where(SeatingLayout.id == layout_id))
+    layout = result.scalar_one_or_none()
+    if not layout:
+        raise HTTPException(status_code=404, detail="Layout not found")
+    await check_class_permission(db, layout.class_id, current_user, require_owner=True)
+
+    await db.delete(layout)
+    await db.flush()
+    return {"message": "Layout deleted"}
+
+
+@router.post("/layouts/{layout_id}/apply", response_model=SeatingResponse)
+async def apply_layout(
+    layout_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Apply a saved layout to the active seating."""
+    result = await db.execute(select(SeatingLayout).where(SeatingLayout.id == layout_id))
+    layout = result.scalar_one_or_none()
+    if not layout:
+        raise HTTPException(status_code=404, detail="Layout not found")
+    await check_class_permission(db, layout.class_id, current_user, require_owner=True)
+
+    seating_q = await db.execute(
+        select(Seating).where(Seating.class_id == layout.class_id)
+    )
+    seating = seating_q.scalar_one_or_none()
+    if not seating:
+        seating = Seating(class_id=layout.class_id)
+        db.add(seating)
+
+    seating.rows = layout.rows
+    seating.cols = layout.cols
+    seating.seats = layout.seats
+
+    await db.flush()
+    await db.refresh(seating)
+    return seating

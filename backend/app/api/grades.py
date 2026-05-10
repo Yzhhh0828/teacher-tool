@@ -22,7 +22,7 @@ async def create_exam(
 
     exam = Exam(**data.model_dump())
     db.add(exam)
-    await db.commit()
+    await db.flush()
     await db.refresh(exam)
     return exam
 
@@ -57,7 +57,7 @@ async def delete_exam(
     await check_class_permission(db, exam.class_id, current_user, require_owner=True)
 
     await db.delete(exam)
-    await db.commit()
+    await db.flush()
     return {"message": "Exam deleted"}
 
 
@@ -106,7 +106,7 @@ async def create_grade(
         grade = Grade(**data.model_dump())
         db.add(grade)
 
-    await db.commit()
+    await db.flush()
     await db.refresh(grade)
     return grade
 
@@ -161,7 +161,7 @@ async def update_grade(
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(grade, key, value)
 
-    await db.commit()
+    await db.flush()
     await db.refresh(grade)
     return grade
 
@@ -187,5 +187,5 @@ async def delete_grade(
     await check_class_permission(db, exam.class_id, current_user, require_owner=True)
 
     await db.delete(grade)
-    await db.commit()
+    await db.flush()
     return {"message": "Grade deleted"}

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
 
@@ -9,6 +9,15 @@ class StudentBase(BaseModel):
     phone: Optional[str] = None
     parent_phone: Optional[str] = None
     remarks: Optional[str] = None
+    student_no: Optional[str] = None
+    birthday: Optional[date] = None
+    parent_name: Optional[str] = None
+    address: Optional[str] = None
+    home_phone: Optional[str] = None
+    hobbies: Optional[str] = None
+    health: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    description: Optional[str] = None
 
 
 class StudentCreate(StudentBase):
@@ -21,6 +30,15 @@ class StudentUpdate(BaseModel):
     phone: Optional[str] = None
     parent_phone: Optional[str] = None
     remarks: Optional[str] = None
+    student_no: Optional[str] = None
+    birthday: Optional[date] = None
+    parent_name: Optional[str] = None
+    address: Optional[str] = None
+    home_phone: Optional[str] = None
+    hobbies: Optional[str] = None
+    health: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    description: Optional[str] = None
 
 
 class StudentResponse(StudentBase):

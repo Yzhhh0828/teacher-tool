@@ -51,11 +51,19 @@ class MCPTools:
         gender: str,
         phone: Optional[str] = None,
         parent_phone: Optional[str] = None,
+        **extra_fields,
     ) -> dict:
         """Add a new student to a class"""
         member = await self.check_class_permission(class_id)
         if member.role != "owner":
             raise PermissionError("Only owner can add students")
+
+        allowed = {
+            "student_no", "birthday", "parent_name", "address",
+            "home_phone", "hobbies", "health", "emergency_contact",
+            "description", "remarks",
+        }
+        kwargs = {k: v for k, v in extra_fields.items() if k in allowed and v is not None}
 
         student = Student(
             class_id=class_id,
@@ -63,6 +71,7 @@ class MCPTools:
             gender=gender,
             phone=phone,
             parent_phone=parent_phone,
+            **kwargs,
         )
         self.db.add(student)
         await self.db.commit()

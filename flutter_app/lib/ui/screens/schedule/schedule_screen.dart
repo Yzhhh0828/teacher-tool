@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/design/tokens.dart';
 import '../../../data/models/schedule.dart';
 import '../../../providers/class_provider.dart';
 import '../../../providers/schedule_provider.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../providers/theme_provider.dart';
+import '../../widgets/empty_view.dart';
+import '../../widgets/shimmer_skeleton.dart';
 
 class ScheduleScreen extends ConsumerWidget {
   const ScheduleScreen({super.key});
@@ -12,72 +17,66 @@ class ScheduleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+    final palette = ref.watch(themeProvider).palette;
+    final accent = AppAccent(palette).schedule;
     final currentClass = ref.watch(currentClassProvider);
     if (currentClass == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('课表管理')),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.calendar_view_week_outlined, size: 48, color: AppTheme.textSecondary.withOpacity(0.3)),
-              const SizedBox(height: 12),
-              const Text('请先在「班级」中选择班级'),
-            ],
-          ),
+        backgroundColor: scheme.surface,
+        appBar: AppBar(
+          title: const Text('课表管理'),
+          automaticallyImplyLeading: false,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: EmptyView(
+          icon: Icons.calendar_view_week_outlined,
+          title: '请先选择班级',
+          accent: accent,
         ),
       );
     }
 
-    final schedulesAsync = ref.watch(scheduleListProvider(currentClass.id));
+    final schedulesAsync =
+        ref.watch(scheduleListProvider(currentClass.id));
     final todayWeekday = DateTime.now().weekday - 1;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: scheme.surface,
       appBar: AppBar(
         title: const Text('课表管理'),
-        backgroundColor: AppTheme.backgroundLight,
+        automaticallyImplyLeading: false,
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding:
+                const EdgeInsets.only(right: AppSpacing.pagePadding),
             child: FilledButton.icon(
-              onPressed: () => _showAddSheet(context, ref, currentClass.id),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('添加'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
+              onPressed: () =>
+                  _showAddSheet(context, ref, currentClass.id),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('添加课程'),
             ),
           ),
         ],
       ),
       body: schedulesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ShimmerSkeleton.list(itemCount: 5, itemHeight: 56),
         error: (e, _) => Center(child: Text('加载失败：$e')),
         data: (schedules) {
           if (schedules.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.calendar_view_week_outlined, size: 56, color: AppTheme.textSecondary.withOpacity(0.3)),
-                  const SizedBox(height: 16),
-                  Text('暂无课表', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  Text('点击右上角「添加」添加课程', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.textSecondary)),
-                ],
+              child: EmptyView(
+                icon: Icons.calendar_view_week_rounded,
+                title: '暂无课表',
+                message: '点击右上角「添加课程」开始排课',
+                accent: accent,
               ),
             );
           }
-          // Build a map: dayOfWeek → sorted list of schedules
-          final Map<int, List<ScheduleModel>> byDay = {};
+          final byDay = <int, List<ScheduleModel>>{};
           for (final s in schedules) {
             byDay.putIfAbsent(s.dayOfWeek, () => []).add(s);
           }
@@ -85,82 +84,130 @@ class ScheduleScreen extends ConsumerWidget {
             list.sort((a, b) => a.period.compareTo(b.period));
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            scrollDirection: Axis.vertical,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: List.generate(7, (day) {
-                    final isToday = day == todayWeekday;
-                    final daySchedules = byDay[day] ?? [];
-                    return Container(
-                      width: 110,
-                      margin: EdgeInsets.only(right: day < 6 ? 8 : 0),
-                      decoration: BoxDecoration(
-                        color: isToday ? AppTheme.primaryColor.withOpacity(0.05) : AppTheme.surfaceWhite,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isToday ? AppTheme.primaryColor.withOpacity(0.3) : AppTheme.borderLight,
-                          width: isToday ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          // Day header
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isToday ? AppTheme.primaryColor : Colors.transparent,
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              const gap = 8.0;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.pagePadding),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(7, (day) {
+                      final isToday = day == todayWeekday;
+                      final daySchedules = byDay[day] ?? [];
+                      return Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(
+                              right: day < 6 ? gap : 0),
+                          decoration: BoxDecoration(
+                            color: scheme.surface,
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.m),
+                            border: Border.all(
+                              color: isToday
+                                  ? accent.withValues(alpha: 0.55)
+                                  : scheme.outlineVariant,
+                              width: isToday ? 1.5 : 1,
                             ),
-                            child: Text(
-                              _weekdays[day],
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: isToday ? Colors.white : AppTheme.textSecondary,
-                              ),
-                            ),
+                            boxShadow: AppShadow.subtle(scheme.shadow),
                           ),
-                          const SizedBox(height: 6),
-                          ...daySchedules.map((s) => _ScheduleChip(
-                                schedule: s,
-                                onDelete: () => _deleteSchedule(context, ref, currentClass.id, s),
-                              )),
-                          if (daySchedules.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Text('空', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary.withOpacity(0.4))),
-                            ),
-                          const SizedBox(height: 6),
-                        ],
-                      ),
-                    );
-                  }),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isToday
+                                      ? accent.withValues(alpha: 0.12)
+                                      : null,
+                                  borderRadius:
+                                      const BorderRadius.vertical(
+                                    top: Radius.circular(
+                                        AppRadius.m - 1),
+                                  ),
+                                ),
+                                child: Text(
+                                  isToday
+                                      ? '${_weekdays[day]}\n今日'
+                                      : _weekdays[day],
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: isToday
+                                        ? accent
+                                        : scheme.onSurface,
+                                    letterSpacing: -0.1,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.gap2),
+                              for (var i = 0;
+                                  i < daySchedules.length;
+                                  i++)
+                                _ScheduleChip(
+                                  schedule: daySchedules[i],
+                                  accent: accent,
+                                  onDelete: () => _deleteSchedule(
+                                      context,
+                                      ref,
+                                      currentClass.id,
+                                      daySchedules[i]),
+                                )
+                                    .animate(
+                                        delay: AppMotion.stagger * i)
+                                    .fadeIn(duration: AppMotion.short)
+                                    .moveY(begin: 4, end: 0),
+                              if (daySchedules.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 18),
+                                  child: Text(
+                                    '空',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: scheme.onSurfaceVariant
+                                          .withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(height: AppSpacing.gap2),
+                            ],
+                          ),
+                        )
+                            .animate(delay: AppMotion.stagger * day)
+                            .fadeIn(duration: AppMotion.short)
+                            .moveY(begin: 8, end: 0),
+                      );
+                    }),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Future<void> _deleteSchedule(BuildContext context, WidgetRef ref, int classId, ScheduleModel s) async {
+  Future<void> _deleteSchedule(BuildContext context, WidgetRef ref,
+      int classId, ScheduleModel s) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('删除课程'),
         content: Text('确定要删除「${s.subject}」吗？'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('取消')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
+            style: FilledButton.styleFrom(
+                backgroundColor:
+                    Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('删除'),
           ),
@@ -169,9 +216,14 @@ class ScheduleScreen extends ConsumerWidget {
     );
     if (confirm == true) {
       try {
-        await ref.read(scheduleListProvider(classId).notifier).deleteSchedule(s.id);
+        await ref
+            .read(scheduleListProvider(classId).notifier)
+            .deleteSchedule(s.id);
       } catch (e) {
-        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('删除失败：$e')));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('删除失败：$e')));
+        }
       }
     }
   }
@@ -188,35 +240,59 @@ class ScheduleScreen extends ConsumerWidget {
 
 class _ScheduleChip extends StatelessWidget {
   final ScheduleModel schedule;
+  final Color accent;
   final VoidCallback onDelete;
-  const _ScheduleChip({required this.schedule, required this.onDelete});
+  const _ScheduleChip({
+    required this.schedule,
+    required this.accent,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onLongPress: onDelete,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(6, 0, 6, 6),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        margin: const EdgeInsets.fromLTRB(
+            AppSpacing.gap2, 0, AppSpacing.gap2, AppSpacing.gap2),
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.gap2 + 2, 8, AppSpacing.gap2, 8),
+        decoration: AppSurface.tinted(context, accent,
+            radius: AppRadius.s, alpha: 0.10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '第${schedule.period}节',
-              style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+              style: TextStyle(
+                fontSize: 10,
+                color: accent,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
             ),
             const SizedBox(height: 2),
             Text(
               schedule.subject,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primaryDark),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSurface,
+                height: 1.2,
+              ),
               overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
             if (schedule.classroom?.isNotEmpty == true)
-              Text(schedule.classroom!, style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary), overflow: TextOverflow.ellipsis),
+              Text(
+                schedule.classroom!,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: scheme.onSurfaceVariant,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
           ],
         ),
       ),
@@ -252,12 +328,15 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottom),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      padding: EdgeInsets.fromLTRB(AppSpacing.gap5, AppSpacing.gap5,
+          AppSpacing.gap5, AppSpacing.gap5 + bottom),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.l)),
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -266,52 +345,87 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
           children: [
             Row(
               children: [
-                const Text('添加课程', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                const Text('添加课程',
+                    style: TextStyle(
+                        fontSize: 19, fontWeight: FontWeight.w800)),
                 const Spacer(),
-                IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => Navigator.pop(context)),
+                IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 22),
+                    onPressed: () => Navigator.pop(context)),
               ],
             ),
-            const SizedBox(height: 14),
-            TextField(controller: _subjectCtrl, decoration: const InputDecoration(labelText: '科目 *', isDense: true)),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.lg),
+            TextField(
+                controller: _subjectCtrl,
+                decoration: const InputDecoration(
+                  labelText: '科目',
+                  prefixIcon: Icon(Icons.menu_book_rounded),
+                )),
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     initialValue: _day,
-                    decoration: const InputDecoration(labelText: '星期', isDense: true),
-                    items: List.generate(7, (i) => DropdownMenuItem(value: i, child: Text(_weekdays[i]))),
+                    decoration: const InputDecoration(
+                      labelText: '星期',
+                      prefixIcon: Icon(Icons.calendar_today_rounded),
+                    ),
+                    items: List.generate(
+                        7,
+                        (i) => DropdownMenuItem(
+                            value: i, child: Text(_weekdays[i]))),
                     onChanged: (v) => setState(() => _day = v!),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     initialValue: _period,
-                    decoration: const InputDecoration(labelText: '节次', isDense: true),
-                    items: List.generate(10, (i) => DropdownMenuItem(value: i + 1, child: Text('第${i + 1}节'))),
+                    decoration: const InputDecoration(
+                      labelText: '节次',
+                      prefixIcon: Icon(Icons.schedule_rounded),
+                    ),
+                    items: List.generate(
+                        10,
+                        (i) => DropdownMenuItem(
+                            value: i + 1,
+                            child: Text('第${i + 1}节'))),
                     onChanged: (v) => setState(() => _period = v!),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            TextField(controller: _teacherCtrl, decoration: const InputDecoration(labelText: '教师（选填）', isDense: true)),
-            const SizedBox(height: 12),
-            TextField(controller: _classroomCtrl, decoration: const InputDecoration(labelText: '教室（选填）', isDense: true)),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+                controller: _teacherCtrl,
+                decoration: const InputDecoration(
+                  labelText: '教师（选填）',
+                  prefixIcon: Icon(Icons.person_rounded),
+                )),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+                controller: _classroomCtrl,
+                decoration: const InputDecoration(
+                  labelText: '教室（选填）',
+                  prefixIcon: Icon(Icons.location_on_rounded),
+                )),
+            const SizedBox(height: AppSpacing.xl),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
+              height: 48,
+              child: FilledButton.icon(
+                icon: _saving
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: scheme.onPrimary),
+                      )
+                    : const Icon(Icons.save_rounded, size: 16),
+                label: const Text('保存课程'),
                 onPressed: _saving ? null : _save,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: _saving
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('保存'),
               ),
             ),
           ],
@@ -322,7 +436,8 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
 
   Future<void> _save() async {
     if (_subjectCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请输入科目')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('请输入科目')));
       return;
     }
     setState(() => _saving = true);
@@ -332,16 +447,23 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
       dayOfWeek: _day,
       period: _period,
       subject: _subjectCtrl.text.trim(),
-      teacherName: _teacherCtrl.text.trim().isEmpty ? null : _teacherCtrl.text.trim(),
-      classroom: _classroomCtrl.text.trim().isEmpty ? null : _classroomCtrl.text.trim(),
+      teacherName: _teacherCtrl.text.trim().isEmpty
+          ? null
+          : _teacherCtrl.text.trim(),
+      classroom: _classroomCtrl.text.trim().isEmpty
+          ? null
+          : _classroomCtrl.text.trim(),
     );
     try {
-      await widget.ref.read(scheduleListProvider(widget.classId).notifier).createSchedule(schedule);
+      await widget.ref
+          .read(scheduleListProvider(widget.classId).notifier)
+          .createSchedule(schedule);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('创建失败：$e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('创建失败：$e')));
       }
     }
   }

@@ -12,6 +12,10 @@ class DummyLLM:
         if False:
             yield None
 
+    async def stream(self, _messages, **_kwargs):
+        if False:
+            yield None
+
 
 class FakeMCPTools:
     def __init__(self, _db, _user_id):
@@ -23,7 +27,7 @@ class FakeMCPTools:
 
 @pytest.mark.asyncio
 async def test_pending_action_with_missing_params_returns_clear_error(monkeypatch):
-    monkeypatch.setattr("app.agent.chain.get_llm", lambda: DummyLLM())
+    monkeypatch.setattr("app.agent.chain.get_llm", lambda *a, **kw: DummyLLM())
 
     session = ConversationSession("session-1", 1)
     chain = AgentChain(session, db=object())
@@ -43,7 +47,7 @@ async def test_pending_action_with_missing_params_returns_clear_error(monkeypatc
 
 @pytest.mark.asyncio
 async def test_random_shuffle_seats_reports_failure_message(monkeypatch):
-    monkeypatch.setattr("app.agent.chain.get_llm", lambda: DummyLLM())
+    monkeypatch.setattr("app.agent.chain.get_llm", lambda *a, **kw: DummyLLM())
     fake_module = types.SimpleNamespace(MCPTools=FakeMCPTools)
     monkeypatch.setitem(sys.modules, "app.mcp.tools", fake_module)
 

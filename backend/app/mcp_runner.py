@@ -27,11 +27,27 @@ async def add_student(
     user_id: int,
     phone: Optional[str] = None,
     parent_phone: Optional[str] = None,
+    student_no: Optional[str] = None,
+    birthday: Optional[str] = None,
+    parent_name: Optional[str] = None,
+    address: Optional[str] = None,
+    home_phone: Optional[str] = None,
+    hobbies: Optional[str] = None,
+    health: Optional[str] = None,
+    emergency_contact: Optional[str] = None,
+    description: Optional[str] = None,
 ) -> dict:
-    """Add a new student"""
+    """Add a new student with optional extended fields"""
     async with async_session_maker() as db:
         tools = MCPTools(db, user_id)
-        return await tools.add_student(class_id, name, gender, phone, parent_phone)
+        return await tools.add_student(
+            class_id, name, gender, phone, parent_phone,
+            student_no=student_no, birthday=birthday,
+            parent_name=parent_name, address=address,
+            home_phone=home_phone, hobbies=hobbies,
+            health=health, emergency_contact=emergency_contact,
+            description=description,
+        )
 
 
 @mcp.tool()
@@ -43,11 +59,25 @@ async def update_student(
     phone: Optional[str] = None,
     parent_phone: Optional[str] = None,
     remarks: Optional[str] = None,
+    student_no: Optional[str] = None,
+    birthday: Optional[str] = None,
+    parent_name: Optional[str] = None,
+    address: Optional[str] = None,
+    home_phone: Optional[str] = None,
+    hobbies: Optional[str] = None,
+    health: Optional[str] = None,
+    emergency_contact: Optional[str] = None,
+    description: Optional[str] = None,
 ) -> dict:
     """Update student information"""
     fields = {k: v for k, v in {
         "name": name, "gender": gender, "phone": phone,
         "parent_phone": parent_phone, "remarks": remarks,
+        "student_no": student_no, "birthday": birthday,
+        "parent_name": parent_name, "address": address,
+        "home_phone": home_phone, "hobbies": hobbies,
+        "health": health, "emergency_contact": emergency_contact,
+        "description": description,
     }.items() if v is not None}
     async with async_session_maker() as db:
         tools = MCPTools(db, user_id)

@@ -11,7 +11,7 @@
 
 ```bash
 cd deploy
-cp .env.prod.example .env
+cp .env.example .env
 # 编辑 .env 文件，填入实际值
 ```
 
@@ -84,7 +84,32 @@ docker-compose down
 
 ### 添加 HTTPS
 
-1. 获取 SSL 证书
-2. 将证书放入 `nginx/ssl/` 目录
-3. 取消 nginx.conf 中 HTTPS server 的注释
+1. 获取 SSL 证书（推荐 Let's Encrypt / certbot）
+2. 将证书放入 `nginx/ssl/` 目录：
+   - `nginx/ssl/cert.pem` — 证书链
+   - `nginx/ssl/key.pem` — 私钥
+3. 编辑 `nginx/nginx.conf`：
+   - 在 HTTP server 块中取消 `return 301 https://...` 的注释
+   - 取消 HTTPS server 块的注释
+   - 将 `server_name` 替换为实际域名
 4. 重启 nginx: `docker-compose restart nginx`
+
+### 数据库迁移
+
+```bash
+# 应用所有待迁移
+docker-compose exec backend alembic upgrade head
+
+# 查看当前版本
+docker-compose exec backend alembic current
+
+# 生成新迁移（开发时使用）
+docker-compose exec backend alembic revision --autogenerate -m "description"
+```
+
+### 数据库恢复
+
+```bash
+# 从备份恢复 PostgreSQL
+docker-compose exec -T postgres psql -U teacher_tool -d teacher_tool < backup_file.sql
+```

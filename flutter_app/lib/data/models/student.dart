@@ -8,6 +8,17 @@ class Student {
   final String? remarks;
   final DateTime createdAt;
 
+  // Extended fields
+  final String? studentNo;
+  final String? birthday;
+  final String? parentName;
+  final String? address;
+  final String? homePhone;
+  final String? hobbies;
+  final String? health;
+  final String? emergencyContact;
+  final String? description;
+
   Student({
     required this.id,
     required this.classId,
@@ -17,6 +28,15 @@ class Student {
     this.parentPhone,
     this.remarks,
     required this.createdAt,
+    this.studentNo,
+    this.birthday,
+    this.parentName,
+    this.address,
+    this.homePhone,
+    this.hobbies,
+    this.health,
+    this.emergencyContact,
+    this.description,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -29,6 +49,15 @@ class Student {
       parentPhone: json['parent_phone'],
       remarks: json['remarks'],
       createdAt: DateTime.parse(json['created_at']),
+      studentNo: json['student_no'],
+      birthday: json['birthday'],
+      parentName: json['parent_name'],
+      address: json['address'],
+      homePhone: json['home_phone'],
+      hobbies: json['hobbies'],
+      health: json['health'],
+      emergencyContact: json['emergency_contact'],
+      description: json['description'],
     );
   }
 
@@ -36,10 +65,18 @@ class Student {
     return {
       'name': name,
       'gender': gender,
-      'phone': phone,
-      'parent_phone': parentPhone,
-      'remarks': remarks,
-      // NOTE: do NOT include 'created_at' as it's set by backend
+      if (phone != null) 'phone': phone,
+      if (parentPhone != null) 'parent_phone': parentPhone,
+      if (remarks != null) 'remarks': remarks,
+      if (studentNo != null) 'student_no': studentNo,
+      if (birthday != null) 'birthday': birthday,
+      if (parentName != null) 'parent_name': parentName,
+      if (address != null) 'address': address,
+      if (homePhone != null) 'home_phone': homePhone,
+      if (hobbies != null) 'hobbies': hobbies,
+      if (health != null) 'health': health,
+      if (emergencyContact != null) 'emergency_contact': emergencyContact,
+      if (description != null) 'description': description,
     };
   }
 }

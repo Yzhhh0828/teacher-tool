@@ -26,3 +26,35 @@ class SeatingResponse(SeatingBase):
 class ShuffleResponse(BaseModel):
     success: bool
     seats: list[Any]
+
+
+# ── Seating layout (named plans) ────────────────────────────────────────
+
+class SeatingLayoutCreate(BaseModel):
+    name: str
+    rows: int = 6
+    cols: int = 8
+    seats: Optional[list[Any]] = None
+    is_active: bool = False
+
+
+class SeatingLayoutUpdate(BaseModel):
+    name: Optional[str] = None
+    rows: Optional[int] = None
+    cols: Optional[int] = None
+    seats: Optional[list[Any]] = None
+    is_active: Optional[bool] = None
+
+
+class SeatingLayoutResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    class_id: int
+    name: str
+    rows: int
+    cols: int
+    seats: list[Any]
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime

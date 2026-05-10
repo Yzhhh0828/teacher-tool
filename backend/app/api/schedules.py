@@ -20,7 +20,7 @@ async def create_schedule(
 
     schedule = Schedule(**data.model_dump())
     db.add(schedule)
-    await db.commit()
+    await db.flush()
     await db.refresh(schedule)
     return schedule
 
@@ -57,5 +57,5 @@ async def delete_schedule(
     await check_class_permission(db, schedule.class_id, current_user)
 
     await db.delete(schedule)
-    await db.commit()
+    await db.flush()
     return {"message": "Schedule deleted"}

@@ -5,6 +5,7 @@ __pycache__/
 *.db
 .env
 .env.*
+!.env.example
 
 # Python
 .venv/
@@ -18,7 +19,7 @@ build/
 
 # Flutter SDK (locally downloaded)
 flutter.zip
-flutter/
+/flutter/
 
 # IDE / OS
 .DS_Store

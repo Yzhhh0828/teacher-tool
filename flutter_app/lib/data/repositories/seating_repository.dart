@@ -7,6 +7,8 @@ class SeatingRepository {
 
   SeatingRepository(this._client);
 
+  // ── Active seating ──
+
   Future<SeatingModel> getSeating(int classId) async {
     final response = await _client.get(ApiConfig.seating(classId));
     return SeatingModel.fromJson(response.data);
@@ -16,6 +18,14 @@ class SeatingRepository {
     final response = await _client.put(
       ApiConfig.seating(classId),
       data: {'rows': rows, 'cols': cols},
+    );
+    return SeatingModel.fromJson(response.data);
+  }
+
+  Future<SeatingModel> saveSeating(int classId, int rows, int cols, List<List<int?>> seats) async {
+    final response = await _client.put(
+      ApiConfig.seating(classId),
+      data: {'rows': rows, 'cols': cols, 'seats': seats},
     );
     return SeatingModel.fromJson(response.data);
   }
@@ -46,5 +56,26 @@ class SeatingRepository {
         'seats': seats,
       },
     );
+  }
+
+  // ── Saved layouts ──
+
+  Future<List<Map<String, dynamic>>> listLayouts(int classId) async {
+    final response = await _client.get(ApiConfig.seatingLayouts(classId));
+    return (response.data as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> createLayout(int classId, Map<String, dynamic> data) async {
+    final response = await _client.post(ApiConfig.seatingLayouts(classId), data: data);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
+  Future<void> deleteLayout(int layoutId) async {
+    await _client.delete(ApiConfig.seatingLayout(layoutId));
+  }
+
+  Future<SeatingModel> applyLayout(int layoutId) async {
+    final response = await _client.post(ApiConfig.applyLayout(layoutId));
+    return SeatingModel.fromJson(response.data);
   }
 }

@@ -4,16 +4,24 @@
 
 ## 架构概览
 
-- **前端平台**: Flutter (Android, iOS, Web, Desktop) - 采用基于 Riverpod 的状态管理，搭载极简美拉德绿设计风格 (Maillard Green Minimalist)。
-- **后端架构**: Python 3.10+ / FastAPI - 支持高吞吐量的异步 API，结合 LangChain 实现的 AI Assistant (LangGraph)。
-- **数据库组件**: PostgreSQL / AsyncPG / SQLAlchemy (ORM)。
+- **前端平台**: Flutter (Android, iOS, Web, Desktop) - 基于 Riverpod 的状态管理；提供 *Warm Orange*（默认）与 *Mellard Green M3-Expressive* 两套主题，可在「设置 → 外观」中切换。
+- **后端架构**: Python 3.10+ / FastAPI - 自研轻量 LLM Provider 抽象层，原生支持 **OpenAI 兼容协议 / Anthropic / Ollama** 三种后端，附带可插拔的 Agent 工具注册表（学生 / 成绩 / 座位 / 分析 / 课堂 / 视觉录入）。
+- **数据库组件**: SQLite（默认）/ PostgreSQL，使用 SQLAlchemy 2.x async ORM。
 - **缓存与状态**: Redis (可选，用于分布式锁与队列等)。
+
+### 进一步阅读
+
+- [`docs/architecture.md`](docs/architecture.md) — 完整模块拓扑与数据流
+- [`docs/ai-agent.md`](docs/ai-agent.md) — Provider 抽象、工具注册表、HTTP 接口
+- [`docs/design-system.md`](docs/design-system.md) — 设计代币、调色板、复用组件
 
 ---
 
 ## 一、本地开发启动指南 (Local Development)
 
 对于在本地直接进行代码开发的场景，我们推荐将前端后端分开独立运行，而不是通过 Docker 容器化所有组件，以便更好的热重载（HOT RELOAD）。
+
+> **快速启动**: 可直接运行 `scripts/dev_start.ps1`（Windows）或 `scripts/dev_start.sh`（Linux/Mac），脚本会自动创建虚拟环境、安装依赖并启动后端。默认使用 SQLite，零配置即可运行。
 
 ### 1.1 后端环境启动 (FastAPI)
 
@@ -112,7 +120,7 @@ flutter test  # 如果您编写了单元测试的话
 2. 准备环境变量：
    ```bash
    cd deploy
-   cp .env.prod.example .env
+   cp .env.example .env
    # -> 编辑 .env 并补充真实的数据库密码、JWT 密钥以及 OpenAI API Key 等等。
    ```
 
@@ -145,6 +153,7 @@ docker-compose exec backend python -c "from app.database import init_db; import 
    - 使用随机熵更高的 `JWT_SECRET_KEY` （如果不配置将直接拒绝启动）。
    - 只接收指定的受限域名列表 `BACKEND_CORS_ORIGINS`。
    - `EXPOSE_DEBUG_VERIFICATION_CODE` 会强制失效（短信息不再在接口回显）。
+   - `DATABASE_URL` 不允许使用 SQLite（必须使用 PostgreSQL）。
 2. **Nginx/HTTPS 配置**：生产网络必须受到 SSL 保护。可在 `deploy/nginx/` 配置 SSL 证书并将 Nginx 中的 `listen 443 ssl` 相关选项开启。
 
 ### 3.5 版本平滑更新 (Hot Update)

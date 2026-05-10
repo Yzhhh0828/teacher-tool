@@ -1,0 +1,199 @@
+﻿python : INFO:     Will watch for changes in these directories: ['D:\\Project\\teacher-tool\\backend']
+所在位置 行:1 字符: 1
++ python run.py 2>&1 | Out-File -FilePath D:\Project\teacher-tool\backe ...
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (INFO:     Will ...tool\\backend']:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [27128] using WatchFiles
+INFO:     Started server process [33444]
+INFO:     Waiting for application startup.
+2026-05-10 22:34:12,248 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:12,248 INFO sqlalchemy.engine.Engine SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite~_%' ESCAPE '~' ORDER BY name
+2026-05-10 22:34:12,248 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,250 INFO sqlalchemy.engine.Engine PRAGMA main.table_xinfo("classes")
+2026-05-10 22:34:12,250 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,251 INFO sqlalchemy.engine.Engine PRAGMA main.table_xinfo("students")
+2026-05-10 22:34:12,251 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,252 INFO sqlalchemy.engine.Engine PRAGMA main.table_xinfo("class_members")
+2026-05-10 22:34:12,252 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,253 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN student_no VARCHAR(50)
+2026-05-10 22:34:12,253 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,269 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN birthday DATE
+2026-05-10 22:34:12,269 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,278 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN parent_name VARCHAR(100)
+2026-05-10 22:34:12,278 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,286 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN address VARCHAR(300)
+2026-05-10 22:34:12,286 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,293 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN home_phone VARCHAR(20)
+2026-05-10 22:34:12,293 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,301 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN hobbies VARCHAR(300)
+2026-05-10 22:34:12,302 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,309 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN health VARCHAR(300)
+2026-05-10 22:34:12,309 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,318 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN emergency_contact VARCHAR(100)
+2026-05-10 22:34:12,318 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,325 INFO sqlalchemy.engine.Engine ALTER TABLE students ADD COLUMN description TEXT
+2026-05-10 22:34:12,325 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,334 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("users")
+2026-05-10 22:34:12,334 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,335 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("classes")
+2026-05-10 22:34:12,335 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,335 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("class_members")
+2026-05-10 22:34:12,335 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,336 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("students")
+2026-05-10 22:34:12,336 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,336 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("exams")
+2026-05-10 22:34:12,336 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,337 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("grades")
+2026-05-10 22:34:12,337 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,338 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("schedules")
+2026-05-10 22:34:12,339 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,340 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("seatings")
+2026-05-10 22:34:12,340 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,341 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("seating_layouts")
+2026-05-10 22:34:12,341 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,342 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("agent_actions")
+2026-05-10 22:34:12,342 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,343 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("classroom_events")
+2026-05-10 22:34:12,343 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,344 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("behavior_categories")
+2026-05-10 22:34:12,344 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,345 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("behavior_records")
+2026-05-10 22:34:12,345 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-10 22:34:12,346 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+2026-05-10 22:34:26,470 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:26,490 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.phone = ?
+2026-05-10 22:34:26,490 INFO sqlalchemy.engine.Engine [generated in 0.00018s] ('13912345678',)
+INFO:     127.0.0.1:57228 - "POST /api/v1/auth/send_code HTTP/1.1" 200 OK
+2026-05-10 22:34:26,492 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:26,522 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:26,522 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.phone = ?
+2026-05-10 22:34:26,522 INFO sqlalchemy.engine.Engine [cached since 0.03294s ago] ('13912345678',)
+INFO:     127.0.0.1:57228 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+2026-05-10 22:34:26,532 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:26,535 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:26,536 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.id = ?
+2026-05-10 22:34:26,536 INFO sqlalchemy.engine.Engine [generated in 0.00017s] (3,)
+2026-05-10 22:34:26,541 INFO sqlalchemy.engine.Engine SELECT classes.id, classes.name, classes.grade, classes.owner_id, classes.created_at, classes.invite_code, classes.invite_expires_at 
+FROM classes JOIN class_members ON classes.id = class_members.class_id 
+WHERE class_members.user_id = ?
+2026-05-10 22:34:26,541 INFO sqlalchemy.engine.Engine [generated in 0.00022s] (3,)
+INFO:     127.0.0.1:57228 - "GET /api/v1/classes HTTP/1.1" 200 OK
+2026-05-10 22:34:26,543 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:26,556 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:26,557 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.id = ?
+2026-05-10 22:34:26,557 INFO sqlalchemy.engine.Engine [cached since 0.02077s ago] (3,)
+2026-05-10 22:34:26,558 INFO sqlalchemy.engine.Engine SELECT class_members.id, class_members.class_id, class_members.user_id, class_members.role, class_members.subject, class_members.joined_at 
+FROM class_members 
+WHERE class_members.class_id = ? AND class_members.user_id = ?
+2026-05-10 22:34:26,558 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (2, 3)
+2026-05-10 22:34:26,561 INFO sqlalchemy.engine.Engine SELECT students.id, students.class_id, students.name, students.gender, students.phone, students.parent_phone, students.remarks, students.created_at, students.student_no, students.birthday, students.parent_name, students.address, students.home_phone, students.hobbies, students.health, students.emergency_contact, students.description 
+FROM students 
+WHERE students.class_id = ? ORDER BY students.id
+2026-05-10 22:34:26,561 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (2,)
+INFO:     127.0.0.1:57228 - "GET /api/v1/students/class/2 HTTP/1.1" 200 OK
+2026-05-10 22:34:26,563 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:26,565 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:26,565 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.id = ?
+2026-05-10 22:34:26,565 INFO sqlalchemy.engine.Engine [cached since 0.02933s ago] (3,)
+2026-05-10 22:34:26,567 INFO sqlalchemy.engine.Engine SELECT class_members.id, class_members.class_id, class_members.user_id, class_members.role, class_members.subject, class_members.joined_at 
+FROM class_members 
+WHERE class_members.class_id = ? AND class_members.user_id = ?
+2026-05-10 22:34:26,567 INFO sqlalchemy.engine.Engine [cached since 0.008596s ago] (2, 3)
+2026-05-10 22:34:26,568 INFO sqlalchemy.engine.Engine SELECT seatings.id, seatings.class_id, seatings.rows, seatings.cols, seatings.seats, seatings.updated_at 
+FROM seatings 
+WHERE seatings.class_id = ?
+2026-05-10 22:34:26,568 INFO sqlalchemy.engine.Engine [generated in 0.00014s] (2,)
+2026-05-10 22:34:26,570 INFO sqlalchemy.engine.Engine SELECT students.id, students.class_id, students.name, students.gender, students.phone, students.parent_phone, students.remarks, students.created_at, students.student_no, students.birthday, students.parent_name, students.address, students.home_phone, students.hobbies, students.health, students.emergency_contact, students.description 
+FROM students 
+WHERE students.class_id = ?
+2026-05-10 22:34:26,570 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (2,)
+2026-05-10 22:34:26,573 INFO sqlalchemy.engine.Engine INSERT INTO seatings (class_id, rows, cols, seats, updated_at) VALUES (?, ?, ?, ?, ?)
+2026-05-10 22:34:26,573 INFO sqlalchemy.engine.Engine [generated in 0.00022s] (2, 6, 8, '[[null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null] ... (2 characters truncated) ... [null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null], [null, null, null, null, null, null, null, null]]', '2026-05-10 14:34:26.573064')
+2026-05-10 22:34:26,585 INFO sqlalchemy.engine.Engine SELECT seatings.id, seatings.class_id, seatings.rows, seatings.cols, seatings.seats, seatings.updated_at 
+FROM seatings 
+WHERE seatings.id = ?
+2026-05-10 22:34:26,585 INFO sqlalchemy.engine.Engine [generated in 0.00020s] (2,)
+INFO:     127.0.0.1:57228 - "GET /api/v1/seating/class/2 HTTP/1.1" 200 OK
+2026-05-10 22:34:26,587 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:26,594 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:26,594 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.id = ?
+2026-05-10 22:34:26,594 INFO sqlalchemy.engine.Engine [cached since 0.05858s ago] (3,)
+2026-05-10 22:34:26,596 INFO sqlalchemy.engine.Engine SELECT class_members.id, class_members.class_id, class_members.user_id, class_members.role, class_members.subject, class_members.joined_at 
+FROM class_members 
+WHERE class_members.class_id = ? AND class_members.user_id = ?
+2026-05-10 22:34:26,596 INFO sqlalchemy.engine.Engine [cached since 0.03782s ago] (2, 3)
+2026-05-10 22:34:26,599 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM behavior_categories 
+WHERE behavior_categories.class_id = ? AND behavior_categories.is_preset = 1
+2026-05-10 22:34:26,599 INFO sqlalchemy.engine.Engine [generated in 0.00021s] (2,)
+2026-05-10 22:34:26,601 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,601 INFO sqlalchemy.engine.Engine [generated in 0.00016s (insertmanyvalues) 1/8 (ordered; batch not supported)] (2, '回答问题', 'lightbulb', 2.0, 1, 1, '2026-05-10 14:34:26.601537')
+2026-05-10 22:34:26,603 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,603 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/8 (ordered; batch not supported)] (2, '作业优秀', 'star', 3.0, 1, 2, '2026-05-10 14:34:26.601541')
+2026-05-10 22:34:26,604 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,604 INFO sqlalchemy.engine.Engine [insertmanyvalues 3/8 (ordered; batch not supported)] (2, '助人为乐', 'handshake', 2.0, 1, 3, '2026-05-10 14:34:26.601542')
+2026-05-10 22:34:26,605 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,605 INFO sqlalchemy.engine.Engine [insertmanyvalues 4/8 (ordered; batch not supported)] (2, '课堂表现好', 'thumb_up', 1.0, 1, 4, '2026-05-10 14:34:26.601542')
+2026-05-10 22:34:26,605 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,605 INFO sqlalchemy.engine.Engine [insertmanyvalues 5/8 (ordered; batch not supported)] (2, '迟到', 'alarm', -1.0, 1, 5, '2026-05-10 14:34:26.601543')
+2026-05-10 22:34:26,606 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,606 INFO sqlalchemy.engine.Engine [insertmanyvalues 6/8 (ordered; batch not supported)] (2, '未交作业', 'assignment_late', -2.0, 1, 6, '2026-05-10 14:34:26.601543')
+2026-05-10 22:34:26,606 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,606 INFO sqlalchemy.engine.Engine [insertmanyvalues 7/8 (ordered; batch not supported)] (2, '课堂违纪', 'warning', -2.0, 1, 7, '2026-05-10 14:34:26.601543')
+2026-05-10 22:34:26,607 INFO sqlalchemy.engine.Engine INSERT INTO behavior_categories (class_id, name, icon, score, is_preset, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-05-10 22:34:26,607 INFO sqlalchemy.engine.Engine [insertmanyvalues 8/8 (ordered; batch not supported)] (2, '其他扣分', 'remove_circle', -1.0, 1, 8, '2026-05-10 14:34:26.601544')
+2026-05-10 22:34:26,609 INFO sqlalchemy.engine.Engine SELECT behavior_categories.id, behavior_categories.class_id, behavior_categories.name, behavior_categories.icon, behavior_categories.score, behavior_categories.is_preset, behavior_categories.sort_order, behavior_categories.created_at 
+FROM behavior_categories 
+WHERE behavior_categories.class_id = ? ORDER BY behavior_categories.sort_order
+2026-05-10 22:34:26,609 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (2,)
+INFO:     127.0.0.1:57228 - "GET /api/v1/behavior/categories/class/2 HTTP/1.1" 200 OK
+2026-05-10 22:34:26,611 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:35,378 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:35,379 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.phone = ?
+2026-05-10 22:34:35,379 INFO sqlalchemy.engine.Engine [cached since 8.889s ago] ('13912345678',)
+INFO:     127.0.0.1:57241 - "POST /api/v1/auth/send_code HTTP/1.1" 200 OK
+2026-05-10 22:34:35,380 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:35,381 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:35,382 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.phone = ?
+2026-05-10 22:34:35,382 INFO sqlalchemy.engine.Engine [cached since 8.892s ago] ('13912345678',)
+INFO:     127.0.0.1:57241 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+2026-05-10 22:34:35,383 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-10 22:34:35,384 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-10 22:34:35,385 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.password_hash, users.created_at 
+FROM users 
+WHERE users.id = ?
+2026-05-10 22:34:35,385 INFO sqlalchemy.engine.Engine [cached since 8.849s ago] (3,)
+2026-05-10 22:34:35,386 INFO sqlalchemy.engine.Engine SELECT class_members.id, class_members.class_id, class_members.user_id, class_members.role, class_members.subject, class_members.joined_at 
+FROM class_members 
+WHERE class_members.class_id = ? AND class_members.user_id = ?
+2026-05-10 22:34:35,386 INFO sqlalchemy.engine.Engine [cached since 8.828s ago] (2, 3)
+2026-05-10 22:34:35,387 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM behavior_categories 
+WHERE behavior_categories.class_id = ? AND behavior_categories.is_preset = 1
+2026-05-10 22:34:35,387 INFO sqlalchemy.engine.Engine [cached since 8.789s ago] (2,)
+2026-05-10 22:34:35,388 INFO sqlalchemy.engine.Engine SELECT behavior_categories.id, behavior_categories.class_id, behavior_categories.name, behavior_categories.icon, behavior_categories.score, behavior_categories.is_preset, behavior_categories.sort_order, behavior_categories.created_at 
+FROM behavior_categories 
+WHERE behavior_categories.class_id = ? ORDER BY behavior_categories.sort_order
+2026-05-10 22:34:35,389 INFO sqlalchemy.engine.Engine [cached since 8.78s ago] (2,)
+INFO:     127.0.0.1:57241 - "GET /api/v1/behavior/categories/class/2 HTTP/1.1" 200 OK
+2026-05-10 22:34:35,390 INFO sqlalchemy.engine.Engine COMMIT

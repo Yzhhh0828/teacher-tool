@@ -23,6 +23,7 @@ def test_rejects_wildcard_cors_in_production():
             JWT_SECRET_KEY="replace-me",
             EXPOSE_DEBUG_VERIFICATION_CODE=False,
             BACKEND_CORS_ORIGINS="*",
+            DATABASE_URL="postgresql+asyncpg://u:p@localhost/db",
         )
 
 
@@ -32,6 +33,7 @@ def test_disables_debug_code_exposure_in_production():
         JWT_SECRET_KEY="replace-me",
         EXPOSE_DEBUG_VERIFICATION_CODE=False,
         BACKEND_CORS_ORIGINS="https://teacher-tool.example.com",
+        DATABASE_URL="postgresql+asyncpg://u:p@localhost/db",
     )
 
     assert settings.should_expose_debug_verification_code is False
@@ -45,4 +47,16 @@ def test_rejects_debug_mode_in_production_environment():
             JWT_SECRET_KEY="replace-me",
             EXPOSE_DEBUG_VERIFICATION_CODE=False,
             BACKEND_CORS_ORIGINS="https://teacher-tool.example.com",
+            DATABASE_URL="postgresql+asyncpg://u:p@localhost/db",
+        )
+
+
+def test_rejects_sqlite_in_production():
+    with pytest.raises(ValueError, match="SQLite is not supported in production"):
+        Settings(
+            DEBUG=False,
+            JWT_SECRET_KEY="replace-me",
+            EXPOSE_DEBUG_VERIFICATION_CODE=False,
+            BACKEND_CORS_ORIGINS="https://teacher-tool.example.com",
+            DATABASE_URL="sqlite+aiosqlite:///./test.db",
         )

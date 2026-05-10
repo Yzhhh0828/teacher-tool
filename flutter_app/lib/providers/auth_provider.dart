@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/api_client.dart';
+import '../../core/services/prefs_service.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/models/user.dart';
+import 'prefs_provider.dart';
 
 const _authStateUnset = Object();
 enum SessionEvent { sessionExpired }
@@ -26,10 +28,12 @@ final apiClientProvider = Provider((ref) {
 });
 final authRepositoryProvider = Provider((ref) => AuthRepository(ref.read(apiClientProvider)));
 
-final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+final authStateProvider =
+    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
     ref.read(authRepositoryProvider),
     ref.read(sessionEventsProvider).stream,
+    ref.read(prefsServiceProvider),
   );
 });
 
@@ -69,9 +73,11 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  final PrefsService _prefs;
   late final StreamSubscription<SessionEvent> _sessionSubscription;
 
-  AuthNotifier(this._repository, Stream<SessionEvent> sessionEvents)
+  AuthNotifier(this._repository, Stream<SessionEvent> sessionEvents,
+      this._prefs)
       : super(AuthState(isLoading: true)) {
     _sessionSubscription = sessionEvents.listen((event) {
       if (event == SessionEvent.sessionExpired) {
@@ -132,10 +138,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _repository.logout();
+    await _prefs.clearSessionPrefs();
     state = AuthState();
   }
 
   void handleSessionExpired() {
+    // Best-effort cleanup; do not await — this runs from a stream callback.
+    // ignore: unawaited_futures
+    _prefs.clearSessionPrefs();
     state = AuthState(error: '登录状态已失效，请重新登录');
   }
 

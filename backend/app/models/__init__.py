@@ -4,6 +4,9 @@ from app.models.student import Student
 from app.models.exam import Exam, Grade
 from app.models.schedule import Schedule
 from app.models.seating import Seating
+from app.models.agent_action import AgentAction
+from app.models.classroom import ClassroomEvent
+from app.models.behavior import BehaviorCategory, BehaviorRecord
 
 __all__ = [
     "User",
@@ -14,4 +17,8 @@ __all__ = [
     "Grade",
     "Schedule",
     "Seating",
+    "AgentAction",
+    "ClassroomEvent",
+    "BehaviorCategory",
+    "BehaviorRecord",
 ]

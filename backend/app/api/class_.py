@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.class_ import Class, ClassMember
 from app.schemas.class_ import (
     ClassCreate, ClassUpdate, ClassResponse, ClassDetailResponse,
-    InviteCodeResponse, JoinClassRequest,
+    ClassMemberResponse, InviteCodeResponse, JoinClassRequest,
 )
 from app.api.deps import get_current_user
 
@@ -30,7 +30,7 @@ async def create_class(
     class_ = Class(name=data.name, grade=data.grade, owner_id=current_user.id)
     class_.members.append(ClassMember(user_id=current_user.id, role="owner"))
     db.add(class_)
-    await db.commit()
+    await db.flush()
     await db.refresh(class_)
     return class_
 
@@ -98,7 +98,7 @@ async def update_class(
     if data.grade is not None:
         class_.grade = data.grade
 
-    await db.commit()
+    await db.flush()
     await db.refresh(class_)
     return class_
 
@@ -119,7 +119,7 @@ async def delete_class(
         raise HTTPException(status_code=403, detail="Only owner can delete class")
 
     await db.delete(class_)
-    await db.commit()
+    await db.flush()
     return {"message": "Class deleted"}
 
 
@@ -144,7 +144,7 @@ async def create_invite_code(
     class_.invite_code = invite_code
     class_.invite_expires_at = expires_at
 
-    await db.commit()
+    await db.flush()
     return InviteCodeResponse(invite_code=invite_code, expires_at=expires_at)
 
 
@@ -184,6 +184,103 @@ async def join_class(
         subject=data.subject,
     )
     db.add(member)
-    await db.commit()
+    await db.flush()
 
     return {"message": "Joined class successfully"}
+
+
+@router.get("/{class_id}/members", response_model=list[ClassMemberResponse])
+async def list_members(
+    class_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """List all members of a class."""
+    # Verify caller is a member
+    caller = await db.execute(
+        select(ClassMember).where(
+            ClassMember.class_id == class_id, ClassMember.user_id == current_user.id
+        )
+    )
+    if not caller.scalar_one_or_none():
+        raise HTTPException(status_code=403, detail="Not a member of this class")
+
+    result = await db.execute(
+        select(ClassMember).where(ClassMember.class_id == class_id)
+    )
+    return result.scalars().all()
+
+
+@router.put("/{class_id}/members/{member_id}")
+async def update_member(
+    class_id: int,
+    member_id: int,
+    data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update a member's role or subject. Only owner can do this."""
+    cls = (await db.execute(select(Class).where(Class.id == class_id))).scalar_one_or_none()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Class not found")
+    if cls.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only owner can update members")
+
+    member = (await db.execute(
+        select(ClassMember).where(ClassMember.id == member_id, ClassMember.class_id == class_id)
+    )).scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    if "role" in data and data["role"] in ("teacher",):
+        member.role = data["role"]
+    if "subject" in data:
+        member.subject = data["subject"]
+    await db.flush()
+    return {"message": "Member updated"}
+
+
+@router.delete("/{class_id}/members/{member_id}")
+async def remove_member(
+    class_id: int,
+    member_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Remove a member from a class. Only owner can do this."""
+    cls = (await db.execute(select(Class).where(Class.id == class_id))).scalar_one_or_none()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Class not found")
+    if cls.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only owner can remove members")
+
+    member = (await db.execute(
+        select(ClassMember).where(ClassMember.id == member_id, ClassMember.class_id == class_id)
+    )).scalar_one_or_none()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    if member.role == "owner":
+        raise HTTPException(status_code=400, detail="Cannot remove the owner")
+
+    await db.delete(member)
+    await db.flush()
+    return {"message": "Member removed"}
+
+
+@router.delete("/{class_id}/invite_code")
+async def revoke_invite_code(
+    class_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Revoke the current invite code."""
+    cls = (await db.execute(select(Class).where(Class.id == class_id))).scalar_one_or_none()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Class not found")
+    if cls.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only owner can revoke invite code")
+
+    cls.invite_code = None
+    cls.invite_expires_at = None
+    await db.flush()
+    return {"message": "Invite code revoked"}

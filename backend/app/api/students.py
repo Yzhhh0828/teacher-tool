@@ -20,7 +20,7 @@ async def create_student(
 
     student = Student(**data.model_dump())
     db.add(student)
-    await db.commit()
+    await db.flush()
     await db.refresh(student)
     return student
 
@@ -58,7 +58,7 @@ async def update_student(
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(student, key, value)
 
-    await db.commit()
+    await db.flush()
     await db.refresh(student)
     return student
 
@@ -78,5 +78,5 @@ async def delete_student(
     await check_class_permission(db, student.class_id, current_user, require_owner=True)
 
     await db.delete(student)
-    await db.commit()
+    await db.flush()
     return {"message": "Student deleted"}

@@ -34,8 +34,12 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "openai"  # openai or anthropic
     OPENAI_API_KEY: str = ""
     OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+    OPENAI_MODEL: str = "gpt-4o-mini"
     ANTHROPIC_API_KEY: str = ""
     ANTHROPIC_BASE_URL: str = "https://api.anthropic.com"
+    ANTHROPIC_MODEL: str = "claude-3-5-sonnet-latest"
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3.2"
 
     # Storage
     STORAGE_TYPE: str = "local"  # local, minio, oss
@@ -90,6 +94,8 @@ class Settings(BaseSettings):
             raise ValueError("BACKEND_CORS_ORIGINS cannot contain '*' in production")
         if self.is_production and self.EXPOSE_DEBUG_VERIFICATION_CODE:
             raise ValueError("EXPOSE_DEBUG_VERIFICATION_CODE must be disabled in production")
+        if self.is_production and "sqlite" in self.DATABASE_URL:
+            raise ValueError("SQLite is not supported in production; use PostgreSQL")
 
 
 @lru_cache()
