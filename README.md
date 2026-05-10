@@ -4,10 +4,20 @@
 
 ## 架构概览
 
-- **前端平台**: Flutter (Android, iOS, Web, Desktop) - 基于 Riverpod 的状态管理；提供 *Warm Orange*（默认）与 *Mellard Green M3-Expressive* 两套主题，可在「设置 → 外观」中切换。
-- **后端架构**: Python 3.10+ / FastAPI - 自研轻量 LLM Provider 抽象层，原生支持 **OpenAI 兼容协议 / Anthropic / Ollama** 三种后端，附带可插拔的 Agent 工具注册表（学生 / 成绩 / 座位 / 分析 / 课堂 / 视觉录入）。
-- **数据库组件**: SQLite（默认）/ PostgreSQL，使用 SQLAlchemy 2.x async ORM。
+- **前端平台**: Flutter (Android, iOS, Web, Desktop) - 基于 Riverpod 的状态管理；提供 *Warm Orange*（默认）与 *Mellard Green M3-Expressive* 两套主题；**用户偏好（主题、当前班级、心情、自定义金句）通过 `PrefsService` 持久化于 SharedPreferences，关闭重开仍保留**。
+- **后端架构**: Python 3.10+ / FastAPI - 自研轻量 LLM Provider 抽象层，原生支持 **OpenAI 兼容协议 / Anthropic / Ollama** 三种后端，附带可插拔的 Agent 工具注册表（学生 / 成绩 / 座位 / 分析 / 课堂 / 视觉录入）+ 写操作二次确认与撤销链。
+- **数据库组件**: SQLite（默认）/ PostgreSQL，使用 SQLAlchemy 2.x async ORM；启动时执行 `ensure_backward_compatible_schema` 幂等迁移补齐缺失字段。
 - **缓存与状态**: Redis (可选，用于分布式锁与队列等)。
+
+### 主要功能模块
+
+- **工作台首页**：成绩趋势 sparkline、心情速记 + 每日金句卡片、今日课表、生日提醒。
+- **班级 / 学生**：批量导入（粘贴一列名字）、性别 / 联系方式 / 备注扩展字段。
+- **座位**：拖拽换座、随机排座、行列调整、保存 / 加载多套方案、**导出 PNG / PDF / 系统打印**。
+- **行为积分**：自定义类目 + 预设、单次多人加扣分、班级排行榜。
+- **成绩 / 分析**：考试 CRUD、批量录分、班级趋势 / 考试分布 / 学生轨迹。
+- **AI Agent**：自然语言 → 工具调用 → 二次确认 → 审计日志 → 一键撤销。
+- **协作邀请**：邀请码加入、成员管理、跨教师共建班级。
 
 ### 进一步阅读
 
@@ -90,22 +100,72 @@
 
 无论是在部署代码前还是提交 PR 前，都需要通过本地核心验证来确保代码完好无损。
 
-### 2.1 后端自动化测试 (`pytest`)
-在进行后端数据库或 API 修改后，您必须确保测试全部通过。
-```bash
-# 在项目根目录执行
-cd backend
-python -m pytest tests/ -v
-```
-*(目前测试已达到全面的用例覆盖并保证100%通过状态)*。
+### 2.1 测试矩阵一览
 
-### 2.2 前端代码验证
-确保您的 Dart/Flutter 代码没有拼写和风格错误。
+| 层 | 工具 | 路径 | 数量 | 命令 |
+| --- | --- | --- | --- | --- |
+| 后端单元 + E2E | pytest | `backend/tests/` | **111** | `cd backend && pytest -q` |
+| Flutter 单元 + Widget | flutter test | `flutter_app/test/` | **53** | `cd flutter_app && flutter test` |
+| API 端到端 | Playwright | `e2e/tests/` | **15** | `cd e2e && npx playwright test` |
+
+合计 **179 个自动化测试**，全部并入 GitHub Actions（见 `.github/workflows/ci.yml`），任意 push / PR 触发。
+
+### 2.2 后端自动化测试 (`pytest`)
+
+```bash
+cd backend
+python -m pytest -q
+```
+
+覆盖：身份验证、班级 / 学生 / 成绩 / 课程表 / 座位 / 行为 / 邀请 / 仪表盘 / 分析 / 课堂 / Agent 工具调用与撤销链 / 数据库迁移幂等。
+
+### 2.3 前端测试与静态分析
+
 ```bash
 cd flutter_app
 flutter analyze
-flutter test  # 如果您编写了单元测试的话
+flutter test
 ```
+
+覆盖：PrefsService 持久化、ThemeNotifier、AuthNotifier、CurrentClassNotifier、GoRouter 不重建不变量、SeatingExporter PNG 捕获、MoodQuoteCard 渲染 / 持久化、各通用 widget。
+
+### 2.4 Playwright API E2E
+
+```bash
+cd e2e
+npm install            # 首次
+npx playwright test    # 自动启动后端 webServer
+```
+
+8 个 spec / 15 用例，覆盖：登录鉴权、班级 CRUD + 跨租户隔离、学生批量导入、座位布局生命周期、行为积分聚合、分析端到端、邀请加入、Agent 二次确认 + 审计 + 撤销。详见 [`e2e/README.md`](e2e/README.md)。
+
+### 2.5 手动验证 Checklist
+
+部署或重大改动后，建议跑一遍完整端到端：
+
+1. **登录**
+   - [ ] `13912345678` 输入手机号 → 获取验证码 → 登录成功 → 落地工作台（不再回弹设置页）
+   - [ ] 切换主题色 / 明暗模式 → 退出 → 重新登录 → 主题保持
+2. **班级 / 学生**
+   - [ ] 新建班级 → 学生页粘贴 5 个名字批量导入 → 列表立即出现
+   - [ ] 切换班级 → 重新进入 → 所选班级保持（持久化）
+3. **座位**
+   - [ ] 座位页拖拽两个学生交换 → 保存
+   - [ ] 调整行列、保存方案、加载方案
+   - [ ] 导出 PNG → 浏览器下载（Web）/ 系统保存（桌面）
+   - [ ] 导出 PDF → 浏览器打印（Web）/ 系统打印对话框（桌面）
+4. **行为积分**
+   - [ ] 给学生加分 / 扣分 → 排行榜实时刷新
+5. **分析**
+   - [ ] 班级总览：学生数、考试数、最近一次考试
+   - [ ] 单次考试分数分布柱状图
+6. **邀请协作**
+   - [ ] 班主任生成邀请码 → 复制 → 第二个账号加入 → 成员列表显示双方
+7. **Agent 助手**
+   - [ ] 自然语言 "给三班加 5 个学生 张三 李四 王五" → 弹出确认 → 点击执行 → 列表落库
+   - [ ] 历史动作页点击撤销 → 数据回滚
+8. **登出**
+   - [ ] 设置 → 退出登录 → 回到登录页 → currentClass / lastTab 已清理但主题保留
 
 ---
 
